@@ -1,1 +1,2854 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Socioeconòmic i Electoral Espanya 2027–2030</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background: #1d4ed8;
+            cursor: pointer;
+            margin-top: -5.5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
 
+    <!-- CAPÇALERA INSTITUCIONAL -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-900 text-white p-2 rounded-xl shadow-xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Simulador Socioeconòmic i Electoral Espanya 2027–2030</h1>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Projecció Post-29N 2026</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Modelització comptable, fiscal, immobiliària i patrimonial any rere any</p>
+                </div>
+            </div>
+
+            <!-- COMMUTADORS DE VISTA DE LA TAULA (ANUAL / MENSUAL / % ESFORÇ) -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Navegació de Vistes Principals -->
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button id="view-btn-individual" onclick="switchMainView('individual')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-700 text-white shadow-xs transition-all">
+                        Simulació Individual
+                    </button>
+                    <button id="view-btn-perfils" onclick="switchMainView('perfils')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all flex items-center gap-1.5">
+                        <span>Impacte per Perfils Laborals</span>
+                        <span class="px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">8 INE</span>
+                    </button>
+                </div>
+
+                <!-- Unitats de Taula -->
+                <div id="unit-switcher-box" class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button id="btn-mode-anual" onclick="setDisplayMode('anual')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs transition-all">
+                        Anual (€/any)
+                    </button>
+                    <button id="btn-mode-mensual" onclick="setDisplayMode('mensual')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
+                        Mensual (€/mes)
+                    </button>
+                    <button id="btn-mode-pct" onclick="setDisplayMode('pct')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
+                        % Nets
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTINGUT PRINCIPAL -->
+    <main class="flex-grow max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- BARRA SUPERIOR DE PERFILS LABORALS ESTÀNDARD D'ESPANYA (ARQUETIPS INE / RETA) -->
+        <section class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900">Arquetips Laborals Estàndard d'Espanya (Dades INE / RETA 2026–2027)</h2>
+                        <p class="text-[11px] text-slate-500">Selecciona un perfil tipus per carregar automàticament la seva estructura salarial, d'habitatge, deute i patrimoni (editable després)</p>
+                    </div>
+                </div>
+                <span id="badge-arquetip-actiu" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 self-start sm:self-auto">
+                    Perfil personalitzat
+                </span>
+            </div>
+
+            <div id="arquetips-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                <!-- Omplert dinàmicament per JS amb els 8 arquetips INE -->
+            </div>
+        </section>
+
+        <!-- VISTA 1: SIMULACIÓ INDIVIDUAL 2027-2030 -->
+        <div id="main-view-individual" class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+            <!-- COLUMNA ESQUERRA: PERFIL PERSONAL I FINANCER ESTRICTE (4 cols) -->
+            <div class="xl:col-span-4 space-y-5">
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-md bg-slate-900 text-white flex items-center justify-center text-xs">1</span>
+                            Perfil Personal i Patrimonial
+                        </h2>
+                        <span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Base 2026</span>
+                    </div>
+
+                    <!-- Pestanyes del Formulari Personal -->
+                    <div class="grid grid-cols-3 bg-slate-50 border-b border-slate-200 text-[11px] font-semibold">
+                        <button type="button" id="tab-btn-personal" onclick="switchProfileTab('personal')" class="py-2.5 px-2 text-center border-b-2 border-blue-600 text-blue-700 bg-white transition-all">
+                            1. Feina i Llar
+                        </button>
+                        <button type="button" id="tab-btn-deutes" onclick="switchProfileTab('deutes')" class="py-2.5 px-2 text-center border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-all">
+                            2. Préstecs i Compra
+                        </button>
+                        <button type="button" id="tab-btn-patrimoni" onclick="switchProfileTab('patrimoni')" class="py-2.5 px-2 text-center border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-all">
+                            3. Inversions i Altres
+                        </button>
+                    </div>
+
+                    <div class="p-4 sm:p-5 space-y-4">
+                        <!-- PESTANYA 1: DADES PERSONALS, SALARI, FEINA I HABITATGE HABITUAL -->
+                        <div id="tab-panel-personal" class="space-y-4">
+                            <!-- Edat actual (2026) -->
+                            <div>
+                                <div class="flex justify-between items-center text-xs mb-1.5">
+                                    <label for="in-edat" class="font-semibold text-slate-700">Edat actual (2026)</label>
+                                    <span class="font-bold text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-md font-mono-num">
+                                        <span id="lbl-edat">34</span> anys <span class="text-slate-400 font-normal">(→ <span id="lbl-edat-30">38</span> al 2030)</span>
+                                    </span>
+                                </div>
+                                <input type="range" id="in-edat" min="18" max="75" step="1" value="34" oninput="markCustomArchetype(); runSimulation()">
+                            </div>
+
+                            <!-- Ingressos Bruts Anuals (Slider + Input Numèric Bidireccional + Badge Mensual) -->
+                            <div class="bg-slate-50/90 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <label for="in-salari" class="text-xs font-bold text-slate-800">Ingressos bruts anuals</label>
+                                    <div class="flex items-center gap-1.5">
+                                        <span id="lbl-salari" class="text-xs font-bold font-mono-num text-blue-800 bg-blue-100/80 border border-blue-200 px-2 py-0.5 rounded-md">36.000 €/any</span>
+                                        <span id="lbl-salari-mes" class="text-[11px] font-semibold font-mono-num text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">3.000 €/mes brut</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2.5">
+                                    <input type="range" id="in-salari" min="12000" max="160000" step="500" value="36000" oninput="syncSalaryFromRange()" class="flex-1">
+                                    <div class="relative w-28 shrink-0">
+                                        <input type="number" id="in-salari-num" min="12000" max="250000" step="500" value="36000" oninput="syncSalaryFromNumber()" onchange="syncSalaryFromNumber()" class="w-full rounded-lg border border-slate-300 bg-white pl-2.5 pr-6 py-1 text-right text-xs font-bold font-mono-num text-slate-900 focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400 pointer-events-none">€</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between text-[10px] text-slate-400 font-mono-num">
+                                    <span>12.000 €</span>
+                                    <span>85.000 €</span>
+                                    <span>160.000 €</span>
+                                </div>
+                            </div>
+
+                            <!-- Tipus de feina / Règim Laboral -->
+                            <div>
+                                <label for="in-feina" class="block text-xs font-semibold text-slate-700 mb-1">Règim Laboral / Categoria</label>
+                                <select id="in-feina" onchange="markCustomArchetype(); runSimulation()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none">
+                                    <option value="assalariat">Assalariat Sector Privat (Conveni / SMI)</option>
+                                    <option value="funcionari">Empleat Públic / Funcionari (PGE)</option>
+                                    <option value="sanitat_edu">Sanitat / Educació Pública</option>
+                                    <option value="autonom">Autònom (RETA per trams 2026–2027)</option>
+                                    <option value="empresari">Empresari PIME / Directiu Societari</option>
+                                    <option value="pensionista">Pensionista / Jubilat</option>
+                                </select>
+                                <p id="lbl-regim-detall" class="text-[11px] text-slate-500 mt-1 leading-snug"></p>
+                            </div>
+
+                            <!-- Situació Habitatge Habitual -->
+                            <div>
+                                <label for="in-habitatge" class="block text-xs font-semibold text-slate-700 mb-1">Situació Habitatge Habitual (2026)</label>
+                                <select id="in-habitatge" onchange="markCustomArchetype(); handleHousingUI()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none">
+                                    <option value="lloguer" selected>De lloguer actualment</option>
+                                    <option value="hipoteca">Propietat amb hipoteca</option>
+                                    <option value="propietat">Propietat pagada (sense hipoteca)</option>
+                                    <option value="familia">Estalviant per comprar / Viu amb família</option>
+                                </select>
+                            </div>
+
+                            <!-- Fills a càrrec i Mobilitat Habitual (Variables personals mínimes per a mesures electorals) -->
+                            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                                <div>
+                                    <label for="in-fills" class="block text-[11px] font-semibold text-slate-700 mb-1">Fills a càrrec (2026)</label>
+                                    <select id="in-fills" onchange="markCustomArchetype(); runSimulation()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-2.5 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <option value="0" selected>0 fills</option>
+                                        <option value="1">1 fill/a</option>
+                                        <option value="2">2 fills</option>
+                                        <option value="3">3 o més fills</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="in-mobilitat" class="block text-[11px] font-semibold text-slate-700 mb-1">Mobilitat habitual</label>
+                                    <select id="in-mobilitat" onchange="markCustomArchetype(); runSimulation()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-2.5 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <option value="public" selected>Transport públic / Peu</option>
+                                        <option value="combustio">Cotxe benzina / dièsel</option>
+                                        <option value="electric">Cotxe elèctric / híbrid</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Si "De lloguer" -> Lloguer mensual actual -->
+                            <div id="box-lloguer-actual" class="bg-blue-50/60 p-3.5 rounded-xl border border-blue-200/80">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <label for="in-lloguer-mes" class="font-semibold text-slate-800">Lloguer mensual actual (2026)</label>
+                                    <span class="font-bold text-blue-800 font-mono-num" id="lbl-lloguer-mes">950 €/mes</span>
+                                </div>
+                                <input type="range" id="in-lloguer-mes" min="400" max="2600" step="25" value="950" oninput="markCustomArchetype(); runSimulation()">
+                            </div>
+
+                            <!-- Si "Propietat amb hipoteca" -> Deute d'Hipoteca Habitatge Habitual -->
+                            <div id="box-hipoteca-habitual" class="hidden bg-amber-50/60 p-3.5 rounded-xl border border-amber-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-800">Hipoteca Habitatge Habitual</span>
+                                    <select id="in-hip-hab-tipus" onchange="markCustomArchetype(); handleHipHabType()" class="text-[11px] font-semibold bg-white border border-amber-300 rounded-lg px-2 py-0.5 text-slate-800">
+                                        <option value="variable">Tipus Variable (Euríbor)</option>
+                                        <option value="fix">Tipus Fix</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <label for="in-hip-hab-cap" class="text-slate-700 font-medium">Capital pendent (€)</label>
+                                        <span class="font-bold text-slate-900 font-mono-num" id="lbl-hip-hab-cap">150.000 €</span>
+                                    </div>
+                                    <input type="range" id="in-hip-hab-cap" min="10000" max="450000" step="5000" value="150000" oninput="markCustomArchetype(); runSimulation()">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <div class="flex justify-between text-[11px] mb-1">
+                                            <label for="in-hip-hab-int" id="lbl-hip-hab-int-title" class="text-slate-700 font-medium">Diferencial (%)</label>
+                                            <span class="font-bold text-slate-900 font-mono-num" id="lbl-hip-hab-int">0,85%</span>
+                                        </div>
+                                        <input type="range" id="in-hip-hab-int" min="0.1" max="5.5" step="0.05" value="0.85" oninput="markCustomArchetype(); runSimulation()">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] mb-1">
+                                            <label for="in-hip-hab-anys" class="text-slate-700 font-medium">Anys pendents</label>
+                                            <span class="font-bold text-slate-900 font-mono-num" id="lbl-hip-hab-anys">22 anys</span>
+                                        </div>
+                                        <input type="range" id="in-hip-hab-anys" min="1" max="30" step="1" value="22" oninput="markCustomArchetype(); runSimulation()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTANYA 2: ALTRES PRÉSTECS I OBJECTIU D'ADQUISICIÓ D'HABITATGE -->
+                        <div id="tab-panel-deutes" class="hidden space-y-4">
+                            <!-- Altres Préstecs (Consum / Cotxe / Personals) -->
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-800">Altres Préstecs (Consum / Cotxe)</span>
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200 text-slate-700">Separat d'hipoteca</span>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <label for="in-prestec-cap" class="text-slate-600 font-medium">Capital pendent (€)</label>
+                                        <span class="font-bold text-slate-900 font-mono-num" id="lbl-prestec-cap">8.000 €</span>
+                                    </div>
+                                    <input type="range" id="in-prestec-cap" min="0" max="60000" step="500" value="8000" oninput="runSimulation()">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <div class="flex justify-between text-[11px] mb-1">
+                                            <label for="in-prestec-int" class="text-slate-600 font-medium">Interès anual (%)</label>
+                                            <span class="font-bold text-slate-900 font-mono-num" id="lbl-prestec-int">6,50%</span>
+                                        </div>
+                                        <input type="range" id="in-prestec-int" min="1.0" max="15.0" step="0.25" value="6.5" oninput="runSimulation()">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] mb-1">
+                                            <label for="in-prestec-anys" class="text-slate-600 font-medium">Anys pendents</label>
+                                            <span class="font-bold text-slate-900 font-mono-num" id="lbl-prestec-anys">4 anys</span>
+                                        </div>
+                                        <input type="range" id="in-prestec-anys" min="1" max="10" step="1" value="4" oninput="runSimulation()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Objectiu d'Adquisició d'Habitatge (2027-2030) -->
+                            <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label for="chk-compra" class="text-xs font-bold text-indigo-950 flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="chk-compra" onchange="toggleCompraBox()" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500">
+                                        Objectiu compra habitatge (2027–30)
+                                    </label>
+                                </div>
+                                <p class="text-[11px] text-indigo-800/80 leading-snug">
+                                    Calcula l'impost de compra (ITP o IVA+AJD amb bonificació jove) l'any de compra i substitueix el lloguer per la nova quota hipotecària.
+                                </p>
+
+                                <div id="box-compra-detall" class="hidden space-y-3 pt-2 border-t border-indigo-200/70">
+                                    <div>
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <label for="in-compra-preu" class="text-slate-700 font-medium">Preu habitatge a comprar (€)</label>
+                                            <span class="font-bold text-indigo-950 font-mono-num" id="lbl-compra-preu">220.000 €</span>
+                                        </div>
+                                        <input type="range" id="in-compra-preu" min="80000" max="600000" step="5000" value="220000" oninput="runSimulation()">
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2.5">
+                                        <div>
+                                            <label for="in-compra-any" class="block text-[11px] font-semibold text-slate-700 mb-1">Any previst compra</label>
+                                            <select id="in-compra-any" onchange="runSimulation()" class="w-full rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800">
+                                                <option value="2027">2027</option>
+                                                <option value="2028" selected>2028</option>
+                                                <option value="2029">2029</option>
+                                                <option value="2030">2030</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="in-compra-tipus" class="block text-[11px] font-semibold text-slate-700 mb-1">Tipus d'immoble</label>
+                                            <select id="in-compra-tipus" onchange="runSimulation()" class="w-full rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800">
+                                                <option value="segona_ma" selected>Segona mà (ITP)</option>
+                                                <option value="obra_nova">Obra nova (IVA+AJD)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <div class="flex justify-between text-[11px] mb-1">
+                                                <label for="in-compra-fin" class="text-slate-700 font-medium">% Finançament</label>
+                                                <span class="font-bold text-slate-900 font-mono-num" id="lbl-compra-fin">80%</span>
+                                            </div>
+                                            <input type="range" id="in-compra-fin" min="50" max="100" step="5" value="80" oninput="runSimulation()">
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-[11px] mb-1">
+                                                <label for="in-compra-anys" class="text-slate-700 font-medium">Termini hipoteca</label>
+                                                <span class="font-bold text-slate-900 font-mono-num" id="lbl-compra-anys">25 anys</span>
+                                            </div>
+                                            <input type="range" id="in-compra-anys" min="10" max="30" step="5" value="25" oninput="runSimulation()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTANYA 3: INVERSIONS FINANCERES I ALTRES HABITATGES -->
+                        <div id="tab-panel-patrimoni" class="hidden space-y-4">
+                            <!-- Inversions Financeres -->
+                            <div class="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-emerald-950">Inversions Financeres / Fons / Renda Fixa</span>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <label for="in-inv-cap" class="text-slate-700 font-medium">Capital invertit (€)</label>
+                                        <span class="font-bold text-emerald-900 font-mono-num" id="lbl-inv-cap">15.000 €</span>
+                                    </div>
+                                    <input type="range" id="in-inv-cap" min="0" max="500000" step="2500" value="15000" oninput="runSimulation()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <label for="in-inv-rend" class="text-slate-700 font-medium">Rendibilitat anual bruta (%)</label>
+                                        <span class="font-bold text-emerald-900 font-mono-num" id="lbl-inv-rend">4,2%</span>
+                                    </div>
+                                    <input type="range" id="in-inv-rend" min="0.5" max="12.0" step="0.1" value="4.2" oninput="runSimulation()">
+                                </div>
+                                <p class="text-[11px] text-emerald-800/80">
+                                    Tributa a la base de l'estalvi de l'IRPF (19%–28% segons tram i programa electoral).
+                                </p>
+                            </div>
+
+                            <!-- Altres Habitatges en Propietat -->
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label for="chk-altre-hab" class="text-xs font-bold text-slate-900 flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="chk-altre-hab" onchange="toggleAltreHabBox()" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500">
+                                        Tinc un altre habitatge en propietat
+                                    </label>
+                                </div>
+
+                                <div id="box-altre-hab-detall" class="hidden space-y-3 pt-2 border-t border-slate-200">
+                                    <div>
+                                        <label for="in-altre-us" class="block text-[11px] font-semibold text-slate-700 mb-1">Ús de l'immoble addicional</label>
+                                        <select id="in-altre-us" onchange="handleAltreHabUs()" class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800">
+                                            <option value="llogat" selected>Llogat a tercers (genera renda)</option>
+                                            <option value="propi">Segona residència / Ús propi / Buit</option>
+                                        </select>
+                                    </div>
+
+                                    <div id="box-altre-lloguer">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <label for="in-altre-renda" class="text-slate-700 font-medium">Ingressos lloguer mensual (€)</label>
+                                            <span class="font-bold text-emerald-700 font-mono-num" id="lbl-altre-renda">850 €/mes</span>
+                                        </div>
+                                        <input type="range" id="in-altre-renda" min="300" max="3000" step="25" value="850" oninput="runSimulation()">
+                                    </div>
+
+                                    <!-- Deute Hipotecari d'aquest altre habitatge -->
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[11px] font-bold text-slate-800">Hipoteca de l'altre habitatge</span>
+                                            <select id="in-altre-hip-tipus" onchange="runSimulation()" class="text-[10px] font-semibold bg-slate-100 border border-slate-300 rounded px-1.5 py-0.5">
+                                                <option value="variable">Variable</option>
+                                                <option value="fix" selected>Fixa</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-[11px] mb-1">
+                                                <label for="in-altre-hip-cap" class="text-slate-600">Capital pendent (€)</label>
+                                                <span class="font-bold text-slate-900 font-mono-num" id="lbl-altre-hip-cap">75.000 €</span>
+                                            </div>
+                                            <input type="range" id="in-altre-hip-cap" min="0" max="350000" step="5000" value="75000" oninput="runSimulation()">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <div>
+                                                <div class="flex justify-between text-[10px] mb-1">
+                                                    <label for="in-altre-hip-int" class="text-slate-600">Tipus / Dif. (%)</label>
+                                                    <span class="font-bold text-slate-900 font-mono-num" id="lbl-altre-hip-int">2,40%</span>
+                                                </div>
+                                                <input type="range" id="in-altre-hip-int" min="0.2" max="6.0" step="0.1" value="2.4" oninput="runSimulation()">
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between text-[10px] mb-1">
+                                                    <label for="in-altre-hip-anys" class="text-slate-600">Anys pendents</label>
+                                                    <span class="font-bold text-slate-900 font-mono-num" id="lbl-altre-hip-anys">14 anys</span>
+                                                </div>
+                                                <input type="range" id="in-altre-hip-anys" min="1" max="30" step="1" value="14" oninput="runSimulation()">
+                                            </div>
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 leading-tight">
+                                            Si està llogat, els interessos i l'IBI són despeses deduïbles del rendiment net immobiliari a l'IRPF.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 2. VARIABLES MACROECONÒMIQUES FIXES 2027-2030 (BLOQUEJADES) -->
+                <section class="bg-slate-900 text-slate-100 rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-xs">
+                    <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Constants Macroeconòmiques UE (2027–2030)
+                        </h2>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700 font-semibold">Variables Fixes</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                        Escenari exogen europeu i mundial (no editable) aplicat idènticament a tots els programes:
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] font-mono-num">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-800">
+                                    <th class="py-1.5 font-sans font-semibold">Indicador</th>
+                                    <th class="py-1.5 text-right font-semibold">2027</th>
+                                    <th class="py-1.5 text-right font-semibold">2028</th>
+                                    <th class="py-1.5 text-right font-semibold">2029</th>
+                                    <th class="py-1.5 text-right font-semibold">2030</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/80 text-slate-200">
+                                <tr>
+                                    <td class="py-1.5 font-sans text-slate-300">IPC General</td>
+                                    <td class="py-1.5 text-right">2,3%</td>
+                                    <td class="py-1.5 text-right">2,1%</td>
+                                    <td class="py-1.5 text-right">2,0%</td>
+                                    <td class="py-1.5 text-right">2,0%</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-sans text-emerald-300">Inflació Aliments</td>
+                                    <td class="py-1.5 text-right text-emerald-300">3,1%</td>
+                                    <td class="py-1.5 text-right text-emerald-300">2,7%</td>
+                                    <td class="py-1.5 text-right text-emerald-300">2,4%</td>
+                                    <td class="py-1.5 text-right text-emerald-300">2,2%</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-sans text-amber-300">Energia + ETS2 UE</td>
+                                    <td class="py-1.5 text-right text-amber-300">+4,5%</td>
+                                    <td class="py-1.5 text-right text-amber-300">+3,8%</td>
+                                    <td class="py-1.5 text-right text-amber-300">+2,5%</td>
+                                    <td class="py-1.5 text-right text-amber-300">+1,8%</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-sans text-sky-300">Euríbor 12 mesos</td>
+                                    <td class="py-1.5 text-right text-sky-300">3,25%</td>
+                                    <td class="py-1.5 text-right text-sky-300">2,90%</td>
+                                    <td class="py-1.5 text-right text-sky-300">2,65%</td>
+                                    <td class="py-1.5 text-right text-sky-300">2,50%</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-sans text-slate-300">Creixement PIB</td>
+                                    <td class="py-1.5 text-right">+2,1%</td>
+                                    <td class="py-1.5 text-right">+1,9%</td>
+                                    <td class="py-1.5 text-right">+1,8%</td>
+                                    <td class="py-1.5 text-right">+1,7%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- COLUMNA DRETA: SELECTOR POLÍTIC, KPIS, ESCALA COMPTABLE 2027-2030 I GRÀFIC (8 cols) -->
+            <div class="xl:col-span-8 space-y-6">
+
+                <!-- 3. ESCENARI POLÍTIC I PACTES D'INVESTIDURA (ÚNICA VARIABLE POLÍTICA) -->
+                <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+                        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-md bg-blue-700 text-white flex items-center justify-center text-xs">2</span>
+                            Escenari Polític i Pactes de Govern (Post-29N 2026)
+                        </h2>
+                        <span class="text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full">Única variable política editable</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="in-partit" class="block text-xs font-semibold text-slate-700 mb-1.5">1. Candidatura / Força Determinant</label>
+                            <select id="in-partit" onchange="updateCoalitionOptions()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-600 outline-none">
+                                <option value="psoe">PSOE (Bloc Socialdemòcrata)</option>
+                                <option value="pp">PP (Bloc Conservador / Liberal)</option>
+                                <option value="vox">Vox (Bloc Nacional-Conservador)</option>
+                                <option value="front">Front Ampli (Esquerra Alternativa)</option>
+                                <option value="erc">ERC (Clau Sobiranista d'Esquerres)</option>
+                                <option value="junts">Junts (Clau Sobiranista Pragmàtica)</option>
+                                <option value="pnb">PNB (Clau Nacionalista Basca)</option>
+                                <option value="bildu">EH Bildu (Clau Sobiranista Social)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="in-pacte" class="block text-xs font-semibold text-slate-700 mb-1.5">2. Fórmula de Coalició / Pacte Parlamentari</label>
+                            <select id="in-pacte" onchange="runSimulation()" class="w-full rounded-xl border border-blue-200 bg-blue-50/50 px-3 py-2.5 text-xs font-semibold text-blue-950 focus:ring-2 focus:ring-blue-600 outline-none">
+                                <!-- Omplert dinàmicament -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Resum d'impactes normatius del pacte -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Mesures fiscals i econòmiques actives en aquest escenari:
+                            </span>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span id="badge-jornada" class="text-[11px] font-mono-num font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">Jornada: 37,5h</span>
+                                <span id="badge-itp" class="text-[11px] font-mono-num font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">ITP: 10%</span>
+                                <span id="badge-orientacio" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700"></span>
+                            </div>
+                        </div>
+                        <ul id="llista-mesures" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-slate-600 list-disc pl-4">
+                            <!-- Omplert per JS -->
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- 4. TARGETES DE RESUM: TREN DE VIDA I BALANÇ AL 2030 -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <!-- Flux de Caixa Net 2030 -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Flux de Caixa Net (2030)</span>
+                        <div class="mt-1.5 flex items-baseline gap-1.5">
+                            <span id="kpi-cashflow-30" class="text-xl sm:text-2xl font-bold font-mono-num text-emerald-600">+4.800 €</span>
+                        </div>
+                        <p id="kpi-cashflow-sub" class="text-[11px] text-slate-500 mt-1">Capacitat d'estalvi líquid</p>
+                    </div>
+
+                    <!-- Increment Patrimonial Net 2030 (Estalvi + Amortització Deute) -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Patrimoni Net Generat</span>
+                        <div class="mt-1.5 flex items-baseline gap-1.5">
+                            <span id="kpi-patrimoni-30" class="text-xl sm:text-2xl font-bold font-mono-num text-blue-700">+9.400 €</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">Estalvi + capital amortitzat (2030)</p>
+                    </div>
+
+                    <!-- Ràtio d'Endeutament Total 2030 -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Ràtio Endeutament</span>
+                        <div class="mt-1.5 flex items-baseline gap-2">
+                            <span id="kpi-deute-ratio" class="text-xl sm:text-2xl font-bold font-mono-num text-slate-900">24,5%</span>
+                            <span id="kpi-deute-tag" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">Sostenible</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">Quotes deute / Ingressos nets</p>
+                    </div>
+
+                    <!-- Serveis Públics i Tren de Vida -->
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Benestar i Valor Hora</span>
+                        <div class="mt-1.5 flex items-center gap-2">
+                            <span id="kpi-serveis-score" class="text-xl sm:text-2xl font-bold font-mono-num text-slate-900">80/100</span>
+                            <span id="kpi-serveis-tag" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Cobertura alta</span>
+                        </div>
+                        <p id="kpi-tren-vida" class="text-[11px] font-mono-num text-slate-600 mt-1">Valor hora net: 16,4 €/h</p>
+                    </div>
+                </section>
+
+                <!-- 5. ESCALA DETALLADA D'INGRESSOS I COSTOS (2027 - 2028 - 2029 - 2030) -->
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Escala Comptable d'Ingressos i Costos (2027–2030)</h2>
+                            <p class="text-xs text-slate-500">Desglossament integral de rendes actives, passives, impostos, deutes separats, aliments i energia</p>
+                        </div>
+                        <span id="badge-taula-unitat" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 self-start sm:self-auto">Imports en €/any</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                                    <th class="py-3 px-4 min-w-[260px]">Partida Comptable / Fiscal</th>
+                                    <th class="py-3 px-4 text-right font-mono-num">2027</th>
+                                    <th class="py-3 px-4 text-right font-mono-num">2028</th>
+                                    <th class="py-3 px-4 text-right font-mono-num">2029</th>
+                                    <th class="py-3 px-4 text-right font-mono-num bg-blue-50/50 text-blue-950">2030</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taula-escala-body" class="divide-y divide-slate-100 text-xs sm:text-[13px]">
+                                <!-- Omplert dinàmicament per JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 6. GRÀFIC D'EVOLUCIÓ INTEGRAL (CHART.JS) -->
+                <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">Evolució Visual: Estructura de Despeses, Deute i Estalvi (2027–2030)</h3>
+                            <p class="text-xs text-slate-500">Comparativa entre les partides de despesa/quotes (barres apilades) i els ingressos nets disponibles (línia)</p>
+                        </div>
+                    </div>
+                    <div class="h-80 w-full">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- 7. CONCLUSIÓ FINAL I COMPARATIVA CARA A CARA ENTRE DOS GOVERNS (ESCENARI A vs ESCENARI B) -->
+                <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-md bg-indigo-700 text-white flex items-center justify-center text-xs">3</span>
+                                Conclusió Final i Comparativa Cara a Cara (2027–2030)
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Compara l'escenari de govern actual (A) amb qualsevol segona alternativa política i fórmula de pacte (B) sobre el teu perfil exacte</p>
+                        </div>
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200 self-start sm:self-auto">
+                            Balanç Acumulat 4 Anys
+                        </span>
+                    </div>
+
+                    <!-- Selectors dels dos governs a comparar -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Escenari A (Sincronitzat amb el govern principal) -->
+                        <div class="bg-blue-50/60 border border-blue-200 rounded-xl p-3.5 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800">Escenari A (Govern Actiu)</span>
+                                <span id="comp-a-orient" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-white text-blue-900 border border-blue-200">—</span>
+                            </div>
+                            <div id="comp-a-title" class="text-xs font-bold text-slate-900 leading-snug">—</div>
+                            <p class="text-[11px] text-slate-500">Modificable al panell superior o des del selector B per contrastar.</p>
+                        </div>
+
+                        <!-- Escenari B (Alternative Govern a comparar) -->
+                        <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-3.5 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-900">Escenari B (Alternativa a Comparar)</span>
+                                <span id="comp-b-orient" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-white text-amber-900 border border-amber-200">—</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <select id="in-partit-b" onchange="updateCoalitionOptionsB()" class="w-full rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 outline-none">
+                                    <option value="psoe">PSOE (Bloc Socialdemòcrata)</option>
+                                    <option value="pp" selected>PP (Bloc Conservador / Liberal)</option>
+                                    <option value="vox">Vox (Bloc Nacional-Conservador)</option>
+                                    <option value="front">Front Ampli (Esquerra Alternativa)</option>
+                                    <option value="erc">ERC (Clau Sobiranista d'Esquerres)</option>
+                                    <option value="junts">Junts (Clau Sobiranista Pragmàtica)</option>
+                                    <option value="pnb">PNB (Clau Nacionalista Basca)</option>
+                                    <option value="bildu">EH Bildu (Clau Sobiranista Social)</option>
+                                </select>
+                                <select id="in-pacte-b" onchange="runSimulation()" class="w-full rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 outline-none">
+                                    <!-- Omplert dinàmicament -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Taula Comparativa Cara a Cara (2030 i Acumulat 2027-2030) -->
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                                    <th class="py-3 px-4 min-w-[230px]">Indicador Clau del teu Perfil</th>
+                                    <th id="th-comp-a" class="py-3 px-4 text-right text-blue-900 bg-blue-50/40 min-w-[140px]">Escenari A</th>
+                                    <th id="th-comp-b" class="py-3 px-4 text-right text-amber-900 bg-amber-50/40 min-w-[140px]">Escenari B</th>
+                                    <th class="py-3 px-4 text-right min-w-[140px]">Diferència (A vs B)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taula-comparativa-ab-body" class="divide-y divide-slate-100 text-xs sm:text-[13px]">
+                                <!-- Omplert dinàmicament per JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Quadre de Conclusió Final Personalitzada -->
+                    <div class="bg-slate-900 text-slate-100 rounded-xl p-4 sm:p-5 border border-slate-800 space-y-2.5">
+                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                            Síntesi i Veredicte Econòmic 2027–2030 per al teu Perfil
+                        </div>
+                        <p id="text-conclusio-final" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                            <!-- Omplert dinàmicament per JS -->
+                        </p>
+                        <div id="tags-conclusio-final" class="flex flex-wrap gap-2 pt-1">
+                            <!-- Etiquetes resum -->
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <!-- VISTA 2: IMPACTE COMPARATIU PER PERFILS LABORALS (2027–2030) -->
+        <div id="main-view-perfils" class="hidden space-y-6">
+
+            <!-- Capçalera de context polític actiu -->
+            <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h2 class="text-base sm:text-lg font-bold text-slate-900">Impacte Comparatiu per Perfils Laborals (2027–2030)</h2>
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Matriu 8 Arquetips INE</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Anàlisi simultània de com el pacte polític seleccionat transforma el poder adquisitiu real, la càrrega fiscal i l'estalvi de cada col·lectiu laboral l'any 2030.
+                        </p>
+                    </div>
+
+                    <!-- Selector ràpid de partit/pacte sincronitzat -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div>
+                            <label for="in-partit-sync" class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Força Determinant</label>
+                            <select id="in-partit-sync" onchange="syncPartyFromProfilesView()" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 outline-none">
+                                <option value="psoe">PSOE (Bloc Socialdemòcrata)</option>
+                                <option value="pp">PP (Bloc Conservador / Liberal)</option>
+                                <option value="vox">Vox (Bloc Nacional-Conservador)</option>
+                                <option value="front">Front Ampli (Esquerra Alternativa)</option>
+                                <option value="erc">ERC (Clau Sobiranista d'Esquerres)</option>
+                                <option value="junts">Junts (Clau Sobiranista Pragmàtica)</option>
+                                <option value="pnb">PNB (Clau Nacionalista Basca)</option>
+                                <option value="bildu">EH Bildu (Clau Sobiranista Social)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="in-pacte-sync" class="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Pacte de Govern Actiu</label>
+                            <select id="in-pacte-sync" onchange="syncCoalitionFromProfilesView()" class="rounded-lg border border-blue-200 bg-blue-50/70 px-2.5 py-1.5 text-xs font-semibold text-blue-950 outline-none max-w-[320px]">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Targetes resum de guanyadors i penalitzats sota aquest govern -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Col·lectiu Més Beneficiat (2030)</span>
+                        <div id="prof-kpi-winner" class="text-sm font-bold text-slate-900 mt-1">—</div>
+                        <p id="prof-kpi-winner-desc" class="text-xs text-emerald-900/80 mt-0.5">—</p>
+                    </div>
+                    <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-3.5">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-800">Col·lectiu Més Tensionat (2030)</span>
+                        <div id="prof-kpi-loser" class="text-sm font-bold text-slate-900 mt-1">—</div>
+                        <p id="prof-kpi-loser-desc" class="text-xs text-rose-900/80 mt-0.5">—</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600">Bretxa d'Estalvi (Directiu vs Jove)</span>
+                        <div id="prof-kpi-gap" class="text-sm font-bold font-mono-num text-slate-900 mt-1">—</div>
+                        <p class="text-xs text-slate-500 mt-0.5">Diferencial anual d'estalvi líquid l'any 2030</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Taula Matriu Comparativa dels 8 Perfils Laborals -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900">Matriu Comparativa d'Impacte per Perfil Laboral (2027 vs 2030)</h3>
+                        <p class="text-xs text-slate-500">Fes clic sobre qualsevol perfil laboral per carregar-lo i personalitzar-lo a la pestanya de Simulació Individual</p>
+                    </div>
+                    <span class="text-[11px] font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 self-start sm:self-auto">
+                        Clica una fila per simular-lo en detall →
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase">
+                                <th class="py-3 px-4 min-w-[210px]">Perfil Laboral (INE / RETA)</th>
+                                <th class="py-3 px-3 text-right font-mono-num">Brut 2027 → 2030</th>
+                                <th class="py-3 px-3 text-right font-mono-num">Impostos + SS (2030)</th>
+                                <th class="py-3 px-3 text-right font-mono-num">Habitatge + Deute + Vida</th>
+                                <th class="py-3 px-3 text-right font-mono-num bg-blue-50/50 text-blue-950">Estalvi Net 2030</th>
+                                <th class="py-3 px-3 text-right font-mono-num">Poder Adquisitiu Real</th>
+                                <th class="py-3 px-4 min-w-[230px]">Balanç i Diagnòstic Normatiu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taula-perfils-body" class="divide-y divide-slate-100 text-xs">
+                            <!-- Omplert dinàmicament per JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Gràfic Comparatiu dels 8 Perfils Laborals (Estalvi Net 2030 i Poder Adquisitiu) -->
+            <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Comparativa Visual 2030: Estalvi Líquid Anual vs Increment Patrimonial per Perfil</h3>
+                        <p class="text-xs text-slate-500">Compara l'estalvi líquid (€/any) i la generació de patrimoni (estalvi + amortització deute) dels 8 perfils sota el govern actual</p>
+                    </div>
+                </div>
+                <div class="h-80 w-full">
+                    <canvas id="profilesComparisonChart"></canvas>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- PEU DE PÀGINA -->
+    <footer class="bg-white border-t border-slate-200 mt-10 py-5">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
+            <p>Simulador Socioeconòmic i Electoral Espanya 2027–2030 · Modelització prospectiva amb fiscalitat de l'estalvi, ITP/IVA habitatge, ETS2 i amortització francesa.</p>
+            <p>Eina d'anàlisi econòmica ciutadana.</p>
+        </div>
+    </footer>
+
+    <!-- MOTOR DE CÀLCUL COMPTABLE I FISCAL -->
+    <script>
+        // 0. ARQUETIPS LABORALS ESTÀNDARD D'ESPANYA (DADES OFICIALS INE / EES I TRAMS RETA 2026-2027)
+        const LABOR_ARCHETYPES = [
+            {
+                id: 'jove_serveis',
+                shortName: '1. Jove Comerç/Hostaleria',
+                fullName: 'Jove Assalariat Comerç / Hostaleria / Serveis',
+                badge: '26 anys · 18.500 €',
+                edat: 26,
+                salari: 18500,
+                feina: 'assalariat',
+                habitatge: 'lloguer',
+                fills: 0,
+                mobilitat: 'public',
+                lloguerMes: 625,
+                hipHabTipus: 'variable',
+                hipHabCap: 0,
+                hipHabInt: 0.85,
+                hipHabAnys: 25,
+                prestecCap: 6500,
+                prestecInt: 7.5,
+                prestecAnys: 4,
+                volComprar: false,
+                compraPreu: 165000,
+                compraAny: 2029,
+                compraTipus: 'segona_ma',
+                compraFin: 85,
+                compraAnys: 30,
+                invCap: 2500,
+                invRend: 3.2,
+                teAltreHab: false,
+                altreUs: 'llogat',
+                altreRenda: 750,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.4,
+                altreHipAnys: 15
+            },
+            {
+                id: 'industria_mitjana',
+                shortName: '2. Assalariat Mitjà INE',
+                fullName: 'Assalariat Indústria / Oficines / Logística (Mitjana INE)',
+                badge: '38 anys · 29.540 €',
+                edat: 38,
+                salari: 29540,
+                feina: 'assalariat',
+                habitatge: 'hipoteca',
+                fills: 1,
+                mobilitat: 'combustio',
+                lloguerMes: 900,
+                hipHabTipus: 'variable',
+                hipHabCap: 138000,
+                hipHabInt: 0.85,
+                hipHabAnys: 21,
+                prestecCap: 9500,
+                prestecInt: 6.5,
+                prestecAnys: 4,
+                volComprar: false,
+                compraPreu: 210000,
+                compraAny: 2028,
+                compraTipus: 'segona_ma',
+                compraFin: 80,
+                compraAnys: 25,
+                invCap: 11000,
+                invRend: 3.8,
+                teAltreHab: false,
+                altreUs: 'llogat',
+                altreRenda: 800,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.4,
+                altreHipAnys: 15
+            },
+            {
+                id: 'docent_public',
+                shortName: '3. Docent / Func. Públic',
+                fullName: 'Docent / Empleat Públic Administració',
+                badge: '44 anys · 38.500 €',
+                edat: 44,
+                salari: 38500,
+                feina: 'funcionari',
+                habitatge: 'hipoteca',
+                fills: 2,
+                mobilitat: 'public',
+                lloguerMes: 950,
+                hipHabTipus: 'fix',
+                hipHabCap: 122000,
+                hipHabInt: 2.35,
+                hipHabAnys: 17,
+                prestecCap: 4000,
+                prestecInt: 5.5,
+                prestecAnys: 3,
+                volComprar: false,
+                compraPreu: 230000,
+                compraAny: 2028,
+                compraTipus: 'segona_ma',
+                compraFin: 80,
+                compraAnys: 20,
+                invCap: 24000,
+                invRend: 4.0,
+                teAltreHab: false,
+                altreUs: 'llogat',
+                altreRenda: 850,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.4,
+                altreHipAnys: 15
+            },
+            {
+                id: 'metge_sanitari',
+                shortName: '4. Metge / Sanitari',
+                fullName: 'Professional Sanitari / Metge Hospitalari',
+                badge: '42 anys · 56.000 €',
+                edat: 42,
+                salari: 56000,
+                feina: 'sanitat_edu',
+                habitatge: 'hipoteca',
+                fills: 2,
+                mobilitat: 'electric',
+                lloguerMes: 1150,
+                hipHabTipus: 'fix',
+                hipHabCap: 185000,
+                hipHabInt: 2.45,
+                hipHabAnys: 19,
+                prestecCap: 0,
+                prestecInt: 5.5,
+                prestecAnys: 3,
+                volComprar: false,
+                compraPreu: 280000,
+                compraAny: 2028,
+                compraTipus: 'segona_ma',
+                compraFin: 80,
+                compraAnys: 20,
+                invCap: 48000,
+                invRend: 4.5,
+                teAltreHab: false,
+                altreUs: 'llogat',
+                altreRenda: 950,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.4,
+                altreHipAnys: 15
+            },
+            {
+                id: 'enginyer_tic',
+                shortName: '5. Enginyer / TIC Compra',
+                fullName: 'Enginyer / Perfil TIC & Telecomunicacions (Compra 2028)',
+                badge: '35 anys · 48.000 €',
+                edat: 35,
+                salari: 48000,
+                feina: 'assalariat',
+                habitatge: 'lloguer',
+                fills: 0,
+                mobilitat: 'public',
+                lloguerMes: 1080,
+                hipHabTipus: 'variable',
+                hipHabCap: 0,
+                hipHabInt: 0.80,
+                hipHabAnys: 25,
+                prestecCap: 0,
+                prestecInt: 6.0,
+                prestecAnys: 3,
+                volComprar: true,
+                compraPreu: 255000,
+                compraAny: 2028,
+                compraTipus: 'segona_ma',
+                compraFin: 80,
+                compraAnys: 25,
+                invCap: 58000,
+                invRend: 4.2,
+                teAltreHab: false,
+                altreUs: 'llogat',
+                altreRenda: 850,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.4,
+                altreHipAnys: 15
+            },
+            {
+                id: 'autonom_reta',
+                shortName: '6. Autònom (RETA)',
+                fullName: 'Autònom Professional / Comerç (RETA per trams)',
+                badge: '41 anys · 32.000 €',
+                edat: 41,
+                salari: 32000,
+                feina: 'autonom',
+                habitatge: 'hipoteca',
+                fills: 1,
+                mobilitat: 'combustio',
+                lloguerMes: 920,
+                hipHabTipus: 'variable',
+                hipHabCap: 132000,
+                hipHabInt: 0.90,
+                hipHabAnys: 18,
+                prestecCap: 11000,
+                prestecInt: 6.25,
+                prestecAnys: 4,
+                volComprar: false,
+                compraPreu: 215000,
+                compraAny: 2028,
+                compraTipus: 'segona_ma',
+                compraFin: 80,
+                compraAnys: 25,
+                invCap: 14000,
+                invRend: 3.9,
+                teAltreHab: false,
+                altreUs: 'llogat',
+                altreRenda: 850,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.4,
+                altreHipAnys: 15
+            },
+            {
+                id: 'empresari_pime',
+                shortName: '7. Empresari / Directiu',
+                fullName: 'Empresari PIME / Directiu + Segon Immoble Llogat',
+                badge: '50 anys · 78.000 € + Rendes',
+                edat: 50,
+                salari: 78000,
+                feina: 'empresari',
+                habitatge: 'propietat',
+                fills: 2,
+                mobilitat: 'electric',
+                lloguerMes: 1300,
+                hipHabTipus: 'fix',
+                hipHabCap: 0,
+                hipHabInt: 2.2,
+                hipHabAnys: 10,
+                prestecCap: 14000,
+                prestecInt: 5.25,
+                prestecAnys: 3,
+                volComprar: false,
+                compraPreu: 320000,
+                compraAny: 2028,
+                compraTipus: 'obra_nova',
+                compraFin: 70,
+                compraAnys: 20,
+                invCap: 125000,
+                invRend: 5.2,
+                teAltreHab: true,
+                altreUs: 'llogat',
+                altreRenda: 950,
+                altreHipTipus: 'fix',
+                altreHipCap: 82000,
+                altreHipInt: 2.35,
+                altreHipAnys: 13
+            },
+            {
+                id: 'jubilat_mitja',
+                shortName: '8. Jubilat / Pensionista',
+                fullName: 'Jubilat / Pensionista Mitjà (Habitatge en propietat)',
+                badge: '68 anys · 21.800 €',
+                edat: 68,
+                salari: 21800,
+                feina: 'pensionista',
+                habitatge: 'propietat',
+                fills: 0,
+                mobilitat: 'public',
+                lloguerMes: 800,
+                hipHabTipus: 'fix',
+                hipHabCap: 0,
+                hipHabInt: 2.0,
+                hipHabAnys: 1,
+                prestecCap: 0,
+                prestecInt: 5.0,
+                prestecAnys: 1,
+                volComprar: false,
+                compraPreu: 180000,
+                compraAny: 2028,
+                compraTipus: 'segona_ma',
+                compraFin: 80,
+                compraAnys: 15,
+                invCap: 36000,
+                invRend: 3.6,
+                teAltreHab: false,
+                altreUs: 'propi',
+                altreRenda: 750,
+                altreHipTipus: 'fix',
+                altreHipCap: 0,
+                altreHipInt: 2.0,
+                altreHipAnys: 10
+            }
+        ];
+
+        // Descripcions específiques de mecànica per règim laboral
+        const REGIME_DESCRIPTIONS = {
+            assalariat: 'Evolució vinculada a convenis col·lectius, SMI i cotització Règim General (6,48%).',
+            funcionari: 'Actualització salarial vinculada als Pressupostos Generals de l\'Estat (PGE) i estabilitat laboral.',
+            sanitat_edu: 'Personal estatutari i docent: retribucions lligades a PGE, carrera professional i guàrdies.',
+            autonom: 'Cotització al RETA per trams de rendiments nets reals (2026–2030) i deducció de despeses.',
+            empresari: 'Retribució directiva/societària, exposada a trams alts d\'IRPF, quota de solidaritat i estalvi.',
+            pensionista: 'Prestació contributiva revaloritzada segons la fórmula d\'indexació a l\'IPC de cada pacte.'
+        };
+
+        // 1. VARIABLES MACROECONÒMIQUES FIXES 2027-2030 (CONSTANTS EXÒGENES UE)
+        const MACRO_FIXED = [
+            { year: 2027, ipc: 0.023, foodInf: 0.031, energyInf: 0.045, euribor: 0.0325, pib: 0.021 },
+            { year: 2028, ipc: 0.021, foodInf: 0.027, energyInf: 0.038, euribor: 0.0290, pib: 0.019 },
+            { year: 2029, ipc: 0.020, foodInf: 0.024, energyInf: 0.025, euribor: 0.0265, pib: 0.018 },
+            { year: 2030, ipc: 0.020, foodInf: 0.022, energyInf: 0.018, euribor: 0.0250, pib: 0.017 }
+        ];
+
+        // 2. ESCENARIS POLÍTICS I COALICIONS POST-29N 2026 (AMB MECÀNIQUES PER RÈGIM LABORAL, FILLS, MOBILITAT I JORNADA)
+        const POLITICAL_SCENARIOS = {
+            psoe: {
+                name: 'PSOE',
+                coalitions: {
+                    psoe_progressista: {
+                        label: 'Coalició Progressista (PSOE + Front Ampli + suport ERC/Bildu/PNB)',
+                        orientation: 'Progressista / Protecció Social',
+                        measures: [
+                            'Jornada laboral legal reduïda a 37,5h setmanals i ampliació de salut bucodental i òptica a la cartera pública.',
+                            'Conciliació: ajuda directa de 1.200 €/any per fill a càrrec i extensió gratuïta de l\'etapa educativa 0–3 anys.',
+                            'Mobilitat: abonaments de transport públic bonificats (-60%) i ajuts a transició elèctrica davant l\'ETS2.',
+                            'IRPF progressiu (< 28.000 € baixa; > 65.000 € i estalvi pugen), ITP 10% (5% joves < 35) i contenció de lloguers.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.012, irpfMidDelta: 0.002, irpfHighDelta: 0.030,
+                            savingsTaxDelta: 0.02, rentalNetReduction: 0.65,
+                            autonomQuotaFactor: 1.01, publicWageBonus: 0.008, healthEduBonus: 0.010,
+                            privateWageBonus: 0.003, executiveBonus: 0.0, solidarityQuotaFactor: 1.0,
+                            pensionIndexFactor: 1.0, smiGrowthBonus: 0.020,
+                            foodTaxFactor: 0.965, energyTaxFactor: 0.96,
+                            itpRate: 0.10, itpYouthRate: 0.05, ivaNewHomeRate: 0.10, ajdRate: 0.015,
+                            rentCapFactor: 0.90, privateHealthEduAnnual: 220, publicServicesScore: 82,
+                            weeklyHours: 37.5, childDirectAidAnnual: 1200, childIrpfTaxCredit: 300,
+                            publicTransportFactor: 0.45, fuelTaxFactor: 1.04
+                        }
+                    },
+                    psoe_minoria: {
+                        label: 'Govern en minoria PSOE (Geometria variable)',
+                        orientation: 'Socialdemocràcia Moderada',
+                        measures: [
+                            'Jornada laboral de 38,5h en transició pactada i reforç gradual d\'atenció primària i salut mental.',
+                            'Conciliació: deducció de 900 €/any per fill menor i beques menjador/escola bressol per rendes mitjanes-baixes.',
+                            'Mobilitat: bonificació del 40% en transport públic recurrent i manteniment de l\'IVA reduït en aliments bàsics.',
+                            'Manteniment trams mitjans IRPF, ITP 10% (5% joves < 35 anys) i pensions revaloritzades amb IPC.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.006, irpfMidDelta: 0.0, irpfHighDelta: 0.018,
+                            savingsTaxDelta: 0.01, rentalNetReduction: 0.55,
+                            autonomQuotaFactor: 1.00, publicWageBonus: 0.005, healthEduBonus: 0.006,
+                            privateWageBonus: 0.002, executiveBonus: 0.002, solidarityQuotaFactor: 1.0,
+                            pensionIndexFactor: 1.0, smiGrowthBonus: 0.012,
+                            foodTaxFactor: 0.98, energyTaxFactor: 0.98,
+                            itpRate: 0.10, itpYouthRate: 0.05, ivaNewHomeRate: 0.10, ajdRate: 0.015,
+                            rentCapFactor: 0.95, privateHealthEduAnnual: 380, publicServicesScore: 76,
+                            weeklyHours: 38.5, childDirectAidAnnual: 600, childIrpfTaxCredit: 600,
+                            publicTransportFactor: 0.65, fuelTaxFactor: 1.02
+                        }
+                    }
+                }
+            },
+            pp: {
+                name: 'PP',
+                coalitions: {
+                    pp_moderat: {
+                        label: 'Majoria / Pacte Centredreta (PP + suport PNB/CC)',
+                        orientation: 'Liberal-Conservador Moderat',
+                        measures: [
+                            'Jornada laboral flexible de 40h amb banc d\'hores i desgravació fiscal d\'assegurances mèdiques privades.',
+                            'Família: ampliació del mínim familiar IRPF (1.350 €/any per fill) i xec escola infantil 0–3 anys.',
+                            'Mobilitat: rebaixa de l\'Impost Especial d\'Hidrocarburs (-12%) per compensar l\'ETS2 i supressió de peatges.',
+                            'Deflactació IRPF < 40.000 €, rebaixa RETA (-11%), fi quota solidaritat i ITP al 6% (3% joves < 35).'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.018, irpfMidDelta: -0.022, irpfHighDelta: -0.028,
+                            savingsTaxDelta: -0.015, rentalNetReduction: 0.60,
+                            autonomQuotaFactor: 0.89, publicWageBonus: 0.001, healthEduBonus: 0.002,
+                            privateWageBonus: 0.004, executiveBonus: 0.008, solidarityQuotaFactor: 0.0,
+                            pensionIndexFactor: 0.97, smiGrowthBonus: 0.005,
+                            foodTaxFactor: 0.975, energyTaxFactor: 0.965,
+                            itpRate: 0.06, itpYouthRate: 0.03, ivaNewHomeRate: 0.10, ajdRate: 0.005,
+                            rentCapFactor: 1.03, privateHealthEduAnnual: 780, publicServicesScore: 69,
+                            weeklyHours: 40.0, childDirectAidAnnual: 0, childIrpfTaxCredit: 1350,
+                            publicTransportFactor: 0.95, fuelTaxFactor: 0.90
+                        }
+                    },
+                    pp_vox: {
+                        label: 'Coalició de Dretes (PP + Vox)',
+                        orientation: 'Reducció Fiscal i Desregulació',
+                        measures: [
+                            'Jornada de 40h sense reducció legal, incentius a plans de pensions privats i col·laboració sanitària concertada.',
+                            'Família: deducció progressiva creixent per fill a l\'IRPF (1.650 €/any per fill) i xec escolar lliure elecció.',
+                            'Mobilitat: suspensió temporal d\'impostos als carburants i moratòria de Zones de Baixes Emissions (ZBE).',
+                            'Rebaixa intensa IRPF i estalvi (-3 punts), RETA -16%, ITP al 4% (2% joves) i IVA 4% primer habitatge.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.025, irpfMidDelta: -0.032, irpfHighDelta: -0.045,
+                            savingsTaxDelta: -0.03, rentalNetReduction: 0.60,
+                            autonomQuotaFactor: 0.84, publicWageBonus: -0.004, healthEduBonus: -0.003,
+                            privateWageBonus: 0.005, executiveBonus: 0.012, solidarityQuotaFactor: 0.0,
+                            pensionIndexFactor: 0.92, smiGrowthBonus: 0.0,
+                            foodTaxFactor: 0.97, energyTaxFactor: 0.935,
+                            itpRate: 0.04, itpYouthRate: 0.02, ivaNewHomeRate: 0.04, ajdRate: 0.001,
+                            rentCapFactor: 1.06, privateHealthEduAnnual: 1220, publicServicesScore: 61,
+                            weeklyHours: 40.0, childDirectAidAnnual: 0, childIrpfTaxCredit: 1650,
+                            publicTransportFactor: 1.05, fuelTaxFactor: 0.84
+                        }
+                    }
+                }
+            },
+            vox: {
+                name: 'Vox',
+                coalitions: {
+                    vox_govern: {
+                        label: 'Govern liderat o condicionat per Vox (+ suport PP)',
+                        orientation: 'Nacional-Conservador / Desregulador',
+                        measures: [
+                            'Jornada de 40h, xec sanitari/escolar i forta reducció de despesa pública (-0,8% real en sous públics).',
+                            'Natalitat: deducció fiscal de 2.000 €/any per fill a l\'IRPF i bonificacions addicionals per família nombrosa.',
+                            'Mobilitat: eliminació d\'impostos verds sobre benzina, dièsel i electricitat (-20% càrrega fiscal carburants).',
+                            'IRPF reduït dràsticament, quota zero RETA < SMI (-22%), IVA 0% primer habitatge i ITP al 3% (1,5% joves).'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.032, irpfMidDelta: -0.042, irpfHighDelta: -0.055,
+                            savingsTaxDelta: -0.04, rentalNetReduction: 0.60,
+                            autonomQuotaFactor: 0.78, publicWageBonus: -0.008, healthEduBonus: -0.006,
+                            privateWageBonus: 0.004, executiveBonus: 0.014, solidarityQuotaFactor: 0.0,
+                            pensionIndexFactor: 0.88, smiGrowthBonus: -0.002,
+                            foodTaxFactor: 0.96, energyTaxFactor: 0.915,
+                            itpRate: 0.03, itpYouthRate: 0.015, ivaNewHomeRate: 0.0, ajdRate: 0.0,
+                            rentCapFactor: 1.08, privateHealthEduAnnual: 1520, publicServicesScore: 55,
+                            weeklyHours: 40.0, childDirectAidAnnual: 0, childIrpfTaxCredit: 2000,
+                            publicTransportFactor: 1.12, fuelTaxFactor: 0.80
+                        }
+                    }
+                }
+            },
+            front: {
+                name: 'Front Ampli',
+                coalitions: {
+                    front_esquerra: {
+                        label: 'Coalició Transformadora (Front Ampli + PSOE + Esquerres Sobiranistes)',
+                        orientation: 'Justícia Fiscal i Estat Social Fort',
+                        measures: [
+                            'Jornada laboral legal de 35h sense reducció salarial i cobertura pública total de dentista, ulleres i fisio.',
+                            'Criança universal: prestació directa de 2.100 €/any (175 €/mes) per fill a càrrec i escoles bressol 100% gratuïtes.',
+                            'Mobilitat verda: transport públic gratuït o tarifa plana de 15 €/mes i recàrrec verd a combustibles fòssils.',
+                            'Forta progressivitat IRPF i estalvi (+4 punts), reducció obligatòria de lloguers i cistella bàsica IVA 0%.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.022, irpfMidDelta: 0.008, irpfHighDelta: 0.048,
+                            savingsTaxDelta: 0.04, rentalNetReduction: 0.40,
+                            autonomQuotaFactor: 1.04, publicWageBonus: 0.012, healthEduBonus: 0.014,
+                            privateWageBonus: 0.004, executiveBonus: -0.004, solidarityQuotaFactor: 1.35,
+                            pensionIndexFactor: 1.02, smiGrowthBonus: 0.030,
+                            foodTaxFactor: 0.945, energyTaxFactor: 0.955,
+                            itpRate: 0.10, itpYouthRate: 0.04, ivaNewHomeRate: 0.10, ajdRate: 0.015,
+                            rentCapFactor: 0.85, privateHealthEduAnnual: 110, publicServicesScore: 89,
+                            weeklyHours: 35.0, childDirectAidAnnual: 2100, childIrpfTaxCredit: 200,
+                            publicTransportFactor: 0.25, fuelTaxFactor: 1.08
+                        }
+                    }
+                }
+            },
+            erc: {
+                name: 'ERC',
+                coalitions: {
+                    erc_clau: {
+                        label: 'Acord Finançament Singular (ERC determinant investidura PSOE)',
+                        orientation: 'Sobiranisme Social i Finançament Propi',
+                        measures: [
+                            'Jornada laboral de 37,5h i inversió del nou finançament en sanitat pública (+1,1% real sous sector) i cures.',
+                            'Conciliació: gratuïtat universal I0-I2 i ajuda directa de 1.440 €/any (120 €/mes) per fill a càrrec.',
+                            'Mobilitat: T-Mobilitat / Rodalies bonificada al 65% i impuls a l\'autoconsum i mobilitat elèctrica.',
+                            'Contenció estricta de lloguers habituals, ITP 5% joves < 35 anys i rebaixa IRPF autonòmic a rendes baixes/mitjanes.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.015, irpfMidDelta: -0.003, irpfHighDelta: 0.025,
+                            savingsTaxDelta: 0.015, rentalNetReduction: 0.65,
+                            autonomQuotaFactor: 0.97, publicWageBonus: 0.009, healthEduBonus: 0.011,
+                            privateWageBonus: 0.003, executiveBonus: 0.0, solidarityQuotaFactor: 1.0,
+                            pensionIndexFactor: 1.0, smiGrowthBonus: 0.022,
+                            foodTaxFactor: 0.97, energyTaxFactor: 0.96,
+                            itpRate: 0.10, itpYouthRate: 0.05, ivaNewHomeRate: 0.10, ajdRate: 0.015,
+                            rentCapFactor: 0.89, privateHealthEduAnnual: 210, publicServicesScore: 84,
+                            weeklyHours: 37.5, childDirectAidAnnual: 1440, childIrpfTaxCredit: 400,
+                            publicTransportFactor: 0.40, fuelTaxFactor: 1.03
+                        }
+                    }
+                }
+            },
+            junts: {
+                name: 'Junts',
+                coalitions: {
+                    junts_clau: {
+                        label: 'Acord Concert Econòmic i Competitivitat (Junts clau de govern)',
+                        orientation: 'Sobiranisme Pragmàtic / Seguretat Jurídica',
+                        measures: [
+                            'Jornada laboral pactada per conveni (38,5h) i concertació sanitària/educativa amb deduccions familiars.',
+                            'Família: deducció autonòmica de 1.300 €/any per fill a l\'IRPF i bonificació de Successions i Patrimoni.',
+                            'Mobilitat: rescat de peatges, bonificació al transport ferroviari i suport fiscal a renovació de flota.',
+                            'Concert econòmic, deflactació IRPF classes mitjanes, RETA -12%, ITP 7% (3,5% joves) i reducció 70% lloguer.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.015, irpfMidDelta: -0.018, irpfHighDelta: -0.015,
+                            savingsTaxDelta: -0.01, rentalNetReduction: 0.70,
+                            autonomQuotaFactor: 0.88, publicWageBonus: 0.006, healthEduBonus: 0.007,
+                            privateWageBonus: 0.005, executiveBonus: 0.008, solidarityQuotaFactor: 0.5,
+                            pensionIndexFactor: 1.0, smiGrowthBonus: 0.012,
+                            foodTaxFactor: 0.975, energyTaxFactor: 0.97,
+                            itpRate: 0.07, itpYouthRate: 0.035, ivaNewHomeRate: 0.10, ajdRate: 0.01,
+                            rentCapFactor: 0.99, privateHealthEduAnnual: 490, publicServicesScore: 77,
+                            weeklyHours: 38.5, childDirectAidAnnual: 300, childIrpfTaxCredit: 1300,
+                            publicTransportFactor: 0.65, fuelTaxFactor: 0.95
+                        }
+                    }
+                }
+            },
+            pnb: {
+                name: 'PNB',
+                coalitions: {
+                    pnb_clau: {
+                        label: 'Agenda Basca i Estabilitat Industrial (PNB clau de govern)',
+                        orientation: 'Centredreta Institucional / Autogovern',
+                        measures: [
+                            'Jornada pactada (38h), blindatge del Concert Econòmic, R+D industrial i EPSV (previsió complementària).',
+                            'Família: prestació directa de 1.200 €/any per fill fins a 7 anys + deducció fiscal per descendents a l\'IRPF.',
+                            'Mobilitat: alta inversió en xarxa ferroviària i metro (bonificat al 50%) i incentius al vehicle electrificat.',
+                            'ITP reduït al 4% (2,5% joves < 35 anys), suport a autònoms (-10% RETA) i pensions revaloritzades amb IPC.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.012, irpfMidDelta: -0.014, irpfHighDelta: -0.010,
+                            savingsTaxDelta: -0.01, rentalNetReduction: 0.65,
+                            autonomQuotaFactor: 0.90, publicWageBonus: 0.007, healthEduBonus: 0.008,
+                            privateWageBonus: 0.005, executiveBonus: 0.006, solidarityQuotaFactor: 0.6,
+                            pensionIndexFactor: 1.0, smiGrowthBonus: 0.014,
+                            foodTaxFactor: 0.98, energyTaxFactor: 0.97,
+                            itpRate: 0.04, itpYouthRate: 0.025, ivaNewHomeRate: 0.10, ajdRate: 0.005,
+                            rentCapFactor: 0.97, privateHealthEduAnnual: 360, publicServicesScore: 81,
+                            weeklyHours: 38.0, childDirectAidAnnual: 1200, childIrpfTaxCredit: 850,
+                            publicTransportFactor: 0.55, fuelTaxFactor: 0.97
+                        }
+                    }
+                }
+            },
+            bildu: {
+                name: 'EH Bildu',
+                coalitions: {
+                    bildu_clau: {
+                        label: 'Acord Social i Fiscalitat Verda (EH Bildu determinant investidura)',
+                        orientation: 'Sobiranisme d\'Esquerres / Blindatge Social',
+                        measures: [
+                            'Jornada laboral de 35h, blindatge de cures públiques, dentista públic i salari mínim propi adaptat.',
+                            'Conciliació: prestació universal de 1.800 €/any per fill a càrrec i escoles infantils 0–3 anys 100% gratuïtes.',
+                            'Mobilitat: transport públic bonificat al 70% i impostos verds per desincentivar el combustible fòssil.',
+                            'Intervenció del mercat de lloguer, ITP 2,5% joves < 35 anys, pensions 101% IPC i recàrrec a rendes altes.'
+                        ],
+                        params: {
+                            irpfLowDelta: -0.018, irpfMidDelta: 0.002, irpfHighDelta: 0.036,
+                            savingsTaxDelta: 0.025, rentalNetReduction: 0.50,
+                            autonomQuotaFactor: 0.98, publicWageBonus: 0.011, healthEduBonus: 0.012,
+                            privateWageBonus: 0.004, executiveBonus: -0.002, solidarityQuotaFactor: 1.25,
+                            pensionIndexFactor: 1.01, smiGrowthBonus: 0.026,
+                            foodTaxFactor: 0.96, energyTaxFactor: 0.95,
+                            itpRate: 0.07, itpYouthRate: 0.025, ivaNewHomeRate: 0.10, ajdRate: 0.01,
+                            rentCapFactor: 0.87, privateHealthEduAnnual: 150, publicServicesScore: 87,
+                            weeklyHours: 35.0, childDirectAidAnnual: 1800, childIrpfTaxCredit: 300,
+                            publicTransportFactor: 0.35, fuelTaxFactor: 1.06
+                        }
+                    }
+                }
+            }
+        };
+
+        let displayMode = 'anual'; // 'anual' | 'mensual' | 'pct'
+        let currentMainView = 'individual'; // 'individual' | 'perfils'
+        let activeArchetypeId = null;
+        let chartInstance = null;
+        let profilesChartInstance = null;
+
+        // Renderitzar botons dels 8 Arquetips Laborals Estàndard
+        function renderArchetypeButtons() {
+            const container = document.getElementById('arquetips-grid');
+            container.innerHTML = LABOR_ARCHETYPES.map(arch => {
+                const isSelected = activeArchetypeId === arch.id;
+                const baseCls = isSelected
+                    ? 'bg-blue-700 text-white border-blue-700 shadow-xs'
+                    : 'bg-slate-50 hover:bg-blue-50/70 text-slate-800 border-slate-200 hover:border-blue-300';
+                const subCls = isSelected ? 'text-blue-100' : 'text-slate-500';
+                return `
+                    <button type="button" onclick="applyArchetype('${arch.id}')" class="text-left p-2.5 rounded-xl border transition-all flex flex-col justify-between ${baseCls}">
+                        <span class="text-[11px] font-bold leading-tight line-clamp-1">${arch.shortName}</span>
+                        <span class="text-[10px] font-mono-num mt-1 ${subCls}">${arch.badge}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Aplicar un dels 8 Arquetips Laborals Estàndard al formulari
+        function applyArchetype(archetypeId) {
+            const arch = LABOR_ARCHETYPES.find(a => a.id === archetypeId);
+            if (!arch) return;
+
+            activeArchetypeId = arch.id;
+            document.getElementById('badge-arquetip-actiu').textContent = `Arquetip: ${arch.fullName}`;
+            document.getElementById('badge-arquetip-actiu').className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 self-start sm:self-auto';
+
+            document.getElementById('in-edat').value = arch.edat;
+            document.getElementById('in-salari').value = arch.salari;
+            document.getElementById('in-salari-num').value = arch.salari;
+            document.getElementById('in-feina').value = arch.feina;
+            document.getElementById('in-habitatge').value = arch.habitatge;
+            document.getElementById('in-fills').value = arch.fills !== undefined ? arch.fills : 0;
+            document.getElementById('in-mobilitat').value = arch.mobilitat || 'public';
+            document.getElementById('in-lloguer-mes').value = arch.lloguerMes;
+
+            document.getElementById('in-hip-hab-tipus').value = arch.hipHabTipus;
+            document.getElementById('in-hip-hab-cap').value = arch.hipHabCap;
+            document.getElementById('in-hip-hab-int').value = arch.hipHabInt;
+            document.getElementById('in-hip-hab-anys').value = arch.hipHabAnys;
+
+            document.getElementById('in-prestec-cap').value = arch.prestecCap;
+            document.getElementById('in-prestec-int').value = arch.prestecInt;
+            document.getElementById('in-prestec-anys').value = arch.prestecAnys;
+
+            document.getElementById('chk-compra').checked = arch.volComprar;
+            document.getElementById('in-compra-preu').value = arch.compraPreu;
+            document.getElementById('in-compra-any').value = arch.compraAny;
+            document.getElementById('in-compra-tipus').value = arch.compraTipus;
+            document.getElementById('in-compra-fin').value = arch.compraFin;
+            document.getElementById('in-compra-anys').value = arch.compraAnys;
+
+            document.getElementById('in-inv-cap').value = arch.invCap;
+            document.getElementById('in-inv-rend').value = arch.invRend;
+
+            document.getElementById('chk-altre-hab').checked = arch.teAltreHab;
+            document.getElementById('in-altre-us').value = arch.altreUs;
+            document.getElementById('in-altre-renda').value = arch.altreRenda;
+            document.getElementById('in-altre-hip-tipus').value = arch.altreHipTipus;
+            document.getElementById('in-altre-hip-cap').value = arch.altreHipCap;
+            document.getElementById('in-altre-hip-int').value = arch.altreHipInt;
+            document.getElementById('in-altre-hip-anys').value = arch.altreHipAnys;
+
+            // Sincronitzar UI visibilitat panells
+            const boxLloguer = document.getElementById('box-lloguer-actual');
+            const boxHipHab = document.getElementById('box-hipoteca-habitual');
+            boxLloguer.classList.toggle('hidden', arch.habitatge !== 'lloguer');
+            boxHipHab.classList.toggle('hidden', arch.habitatge !== 'hipoteca');
+            document.getElementById('lbl-hip-hab-int-title').textContent = arch.hipHabTipus === 'variable' ? 'Diferencial (%)' : 'Tipus fix (%)';
+
+            document.getElementById('box-compra-detall').classList.toggle('hidden', !arch.volComprar);
+            document.getElementById('box-altre-hab-detall').classList.toggle('hidden', !arch.teAltreHab);
+            document.getElementById('box-altre-lloguer').classList.toggle('hidden', arch.altreUs !== 'llogat');
+
+            renderArchetypeButtons();
+            runSimulation();
+        }
+
+        function markCustomArchetype() {
+            if (activeArchetypeId !== null) {
+                activeArchetypeId = null;
+                document.getElementById('badge-arquetip-actiu').textContent = 'Perfil personalitzat';
+                document.getElementById('badge-arquetip-actiu').className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 self-start sm:self-auto';
+                renderArchetypeButtons();
+            }
+        }
+
+        // Canvi entre Vista Individual i Vista Impacte per Perfils Laborals
+        function switchMainView(viewName) {
+            currentMainView = viewName;
+            const btnInd = document.getElementById('view-btn-individual');
+            const btnPerf = document.getElementById('view-btn-perfils');
+            const viewInd = document.getElementById('main-view-individual');
+            const viewPerf = document.getElementById('main-view-perfils');
+
+            if (viewName === 'individual') {
+                btnInd.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-700 text-white shadow-xs transition-all';
+                btnPerf.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all flex items-center gap-1.5';
+                viewInd.classList.remove('hidden');
+                viewPerf.classList.add('hidden');
+            } else {
+                btnPerf.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-700 text-white shadow-xs transition-all flex items-center gap-1.5';
+                btnInd.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all';
+                viewPerf.classList.remove('hidden');
+                viewInd.classList.add('hidden');
+                renderProfilesComparisonView();
+            }
+        }
+
+        // Carregar perfil des de la taula comparativa cap a la vista individual
+        function selectProfileAndOpenIndividual(archetypeId) {
+            applyArchetype(archetypeId);
+            switchMainView('individual');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Formatar valors segons el mode de visualització
+        function formatValue(annualVal, annualNetIncome, showSign = false) {
+            if (displayMode === 'pct') {
+                if (!annualNetIncome || annualNetIncome <= 0) return '0,0%';
+                const pct = (annualVal / annualNetIncome) * 100;
+                const sign = (showSign && pct > 0) ? '+' : '';
+                return sign + pct.toFixed(1).replace('.', ',') + '%';
+            }
+            const divisor = displayMode === 'mensual' ? 12 : 1;
+            const rounded = Math.round(annualVal / divisor);
+            const absStr = Math.abs(rounded).toLocaleString('ca-ES') + ' €';
+            if (rounded < 0) return '-' + absStr;
+            if (showSign && rounded > 0) return '+' + absStr;
+            return absStr;
+        }
+
+        function formatEURSimple(val) {
+            return Math.round(val).toLocaleString('ca-ES') + ' €';
+        }
+
+        // Canvi de mode de visualització (Anual / Mensual / % Ingressos Nets)
+        function setDisplayMode(mode) {
+            displayMode = mode;
+            const modes = ['anual', 'mensual', 'pct'];
+            modes.forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (m === mode) {
+                    btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs transition-all';
+                } else {
+                    btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all';
+                }
+            });
+
+            const badge = document.getElementById('badge-taula-unitat');
+            if (mode === 'anual') badge.textContent = 'Imports en €/any';
+            else if (mode === 'mensual') badge.textContent = 'Imports en €/mes (12 pagues)';
+            else badge.textContent = 'Percentatge sobre Ingressos Nets (%)';
+
+            runSimulation();
+            if (currentMainView === 'perfils') {
+                renderProfilesComparisonView();
+            }
+        }
+
+        // Pestanyes del panell esquerre
+        function switchProfileTab(tabName) {
+            const tabs = ['personal', 'deutes', 'patrimoni'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const panel = document.getElementById(`tab-panel-${t}`);
+                if (t === tabName) {
+                    btn.className = 'py-2.5 px-2 text-center border-b-2 border-blue-600 text-blue-700 bg-white transition-all';
+                    panel.classList.remove('hidden');
+                } else {
+                    btn.className = 'py-2.5 px-2 text-center border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-all';
+                    panel.classList.add('hidden');
+                }
+            });
+        }
+
+        // Actualitzar coalicions en canviar el partit
+        function updateCoalitionOptions(skipRun = false) {
+            const partitKey = document.getElementById('in-partit').value;
+            const pacteSelect = document.getElementById('in-pacte');
+            const coalitions = POLITICAL_SCENARIOS[partitKey].coalitions;
+
+            const optionsHtml = Object.entries(coalitions).map(([key, obj]) =>
+                `<option value="${key}">${obj.label}</option>`
+            ).join('');
+
+            pacteSelect.innerHTML = optionsHtml;
+
+            // Sincronitzar selectors de la vista de perfils
+            const syncPartit = document.getElementById('in-partit-sync');
+            const syncPacte = document.getElementById('in-pacte-sync');
+            if (syncPartit && syncPacte) {
+                syncPartit.value = partitKey;
+                syncPacte.innerHTML = optionsHtml;
+            }
+
+            if (!skipRun) {
+                runSimulation();
+                if (currentMainView === 'perfils') renderProfilesComparisonView();
+            }
+        }
+
+        function updateCoalitionOptionsB(skipRun = false) {
+            const partitKeyB = document.getElementById('in-partit-b').value;
+            const pacteSelectB = document.getElementById('in-pacte-b');
+            const coalitionsB = POLITICAL_SCENARIOS[partitKeyB].coalitions;
+
+            pacteSelectB.innerHTML = Object.entries(coalitionsB).map(([key, obj]) =>
+                `<option value="${key}">${obj.label}</option>`
+            ).join('');
+
+            if (!skipRun) {
+                runSimulation();
+            }
+        }
+
+        function syncPartyFromProfilesView() {
+            const partitKey = document.getElementById('in-partit-sync').value;
+            document.getElementById('in-partit').value = partitKey;
+            updateCoalitionOptions();
+        }
+
+        function syncCoalitionFromProfilesView() {
+            const pacteKey = document.getElementById('in-pacte-sync').value;
+            document.getElementById('in-pacte').value = pacteKey;
+            runSimulation();
+            renderProfilesComparisonView();
+        }
+
+        // Mostrar/amagar controls segons situació d'habitatge habitual
+        function handleHousingUI() {
+            const hab = document.getElementById('in-habitatge').value;
+            const boxLloguer = document.getElementById('box-lloguer-actual');
+            const boxHipHab = document.getElementById('box-hipoteca-habitual');
+
+            boxLloguer.classList.add('hidden');
+            boxHipHab.classList.add('hidden');
+
+            if (hab === 'lloguer') {
+                boxLloguer.classList.remove('hidden');
+            } else if (hab === 'hipoteca') {
+                boxHipHab.classList.remove('hidden');
+            }
+            runSimulation();
+        }
+
+        function handleHipHabType() {
+            const tipus = document.getElementById('in-hip-hab-tipus').value;
+            const title = document.getElementById('lbl-hip-hab-int-title');
+            const slider = document.getElementById('in-hip-hab-int');
+            if (tipus === 'variable') {
+                title.textContent = 'Diferencial (%)';
+                slider.value = 0.85;
+            } else {
+                title.textContent = 'Tipus fix (%)';
+                slider.value = 2.65;
+            }
+            runSimulation();
+        }
+
+        function toggleCompraBox() {
+            const checked = document.getElementById('chk-compra').checked;
+            const box = document.getElementById('box-compra-detall');
+            if (checked) box.classList.remove('hidden');
+            else box.classList.add('hidden');
+            runSimulation();
+        }
+
+        function toggleAltreHabBox() {
+            const checked = document.getElementById('chk-altre-hab').checked;
+            const box = document.getElementById('box-altre-hab-detall');
+            if (checked) box.classList.remove('hidden');
+            else box.classList.add('hidden');
+            runSimulation();
+        }
+
+        function handleAltreHabUs() {
+            const us = document.getElementById('in-altre-us').value;
+            const boxRenda = document.getElementById('box-altre-lloguer');
+            if (us === 'llogat') boxRenda.classList.remove('hidden');
+            else boxRenda.classList.add('hidden');
+            runSimulation();
+        }
+
+        // Sistema d'amortització francesa anual
+        function calcLoanStep(principal, annualRate, remainingYears) {
+            if (principal <= 0 || remainingYears <= 0) {
+                return { payment: 0, interest: 0, principalPaid: 0, nextPrincipal: 0 };
+            }
+            const r = Math.max(0.0001, annualRate);
+            const n = remainingYears;
+            const annuity = principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const interest = principal * r;
+            const principalPaid = Math.min(principal, annuity - interest);
+            const nextPrincipal = Math.max(0, principal - principalPaid);
+            return {
+                payment: interest + principalPaid,
+                interest: interest,
+                principalPaid: principalPaid,
+                nextPrincipal: nextPrincipal
+            };
+        }
+
+        // MOTOR DE CÀLCUL REUTILITZABLE PER A QUALSEVOL PERFIL I ESCENARI POLÍTIC
+        function simulateProfileTrajectory(profile, pol) {
+            const edat2026 = profile.edat;
+            const salari2026 = profile.salari;
+            const feina = profile.feina;
+            const habitatge = profile.habitatge;
+            const fills = profile.fills || 0;
+            const mobilitat = profile.mobilitat || 'public';
+            const lloguerMes2026 = profile.lloguerMes;
+
+            const hipHabTipus = profile.hipHabTipus;
+            let hipHabCap = habitatge === 'hipoteca' ? profile.hipHabCap : 0;
+            const hipHabInt = profile.hipHabInt / 100;
+            let hipHabAnys = profile.hipHabAnys;
+
+            let prestecCap = profile.prestecCap;
+            const prestecInt = profile.prestecInt / 100;
+            let prestecAnys = profile.prestecAnys;
+
+            const volComprar = profile.volComprar;
+            const compraPreuBase = profile.compraPreu;
+            const compraAny = profile.compraAny;
+            const compraTipus = profile.compraTipus;
+            const compraFinPct = profile.compraFin / 100;
+            const compraAnys = profile.compraAnys;
+
+            const invCapBase = profile.invCap;
+            const invRendPct = profile.invRend / 100;
+
+            const teAltreHab = profile.teAltreHab;
+            const altreUs = profile.altreUs;
+            const altreRendaMes2026 = profile.altreRenda;
+            const altreHipTipus = profile.altreHipTipus;
+            let altreHipCap = teAltreHab ? profile.altreHipCap : 0;
+            const altreHipInt = profile.altreHipInt / 100;
+            let altreHipAnys = profile.altreHipAnys;
+
+            let currentSalaryGross = salari2026;
+            let currentRentHabitual = lloguerMes2026 * 12;
+            let currentAltreRentGross = altreRendaMes2026 * 12;
+            let hasPurchasedYet = false;
+
+            let baseFood2026 = 3100 + (salari2026 * 0.018) + (fills * 1150);
+            let baseEnergy2026 = 1350 + (salari2026 * 0.006) + (fills * 260);
+            let baseMobility2026 = mobilitat === 'combustio' ? 1680 : (mobilitat === 'electric' ? 890 : 780);
+            let baseGeneralLife2026 = 2500 + (salari2026 * 0.030) + (fills * 850);
+            if (habitatge === 'familia') {
+                baseFood2026 *= 0.65;
+                baseEnergy2026 *= 0.50;
+            }
+
+            let currentFood = baseFood2026;
+            let currentEnergy = baseEnergy2026;
+            let currentMobility = baseMobility2026;
+            let currentGeneralLife = baseGeneralLife2026;
+            let cumGeneralInflation = 1.0;
+
+            const yearlyResults = [];
+
+            MACRO_FIXED.forEach((macro, idx) => {
+                const ageThisYear = edat2026 + idx + 1;
+                cumGeneralInflation *= (1 + macro.ipc);
+
+                // --- A. INGRESSOS BRUTS SEGONS RÈGIM LABORAL I PROGRAMA ELECTORAL ---
+                let wageGrowth = macro.ipc + (macro.pib * 0.20);
+                let isRetired = (feina === 'pensionista');
+
+                if (isRetired) {
+                    wageGrowth = macro.ipc * pol.pensionIndexFactor;
+                    currentSalaryGross *= (1 + wageGrowth);
+                } else if (edat2026 < 66 && ageThisYear >= 66) {
+                    isRetired = true;
+                    if (edat2026 + idx < 66) {
+                        currentSalaryGross = Math.min(47800, currentSalaryGross * 0.78);
+                    } else {
+                        currentSalaryGross *= (1 + macro.ipc * pol.pensionIndexFactor);
+                    }
+                } else {
+                    if (salari2026 <= 23000) wageGrowth += pol.smiGrowthBonus;
+                    if (feina === 'funcionari') {
+                        wageGrowth += pol.publicWageBonus;
+                    } else if (feina === 'sanitat_edu') {
+                        wageGrowth += pol.healthEduBonus;
+                    } else if (feina === 'empresari') {
+                        wageGrowth += (macro.pib * 0.30) + pol.executiveBonus;
+                    } else if (feina === 'autonom') {
+                        wageGrowth += (macro.pib * 0.18);
+                    } else {
+                        wageGrowth += pol.privateWageBonus;
+                    }
+                    currentSalaryGross *= (1 + wageGrowth);
+                }
+
+                // A2. Ingressos Passius Inversions Financeres
+                const passiveInvGross = invCapBase * invRendPct;
+
+                // A3. Ingressos Lloguer Altres Habitatges
+                let passiveRentGross = 0;
+                if (teAltreHab && altreUs === 'llogat') {
+                    if (idx > 0) {
+                        const rentGrowth = (macro.ipc + 0.01) * pol.rentCapFactor;
+                        currentAltreRentGross *= (1 + rentGrowth);
+                    }
+                    passiveRentGross = currentAltreRentGross;
+                }
+
+                // A4. Prestacions directes universals per fills a càrrec
+                const childDirectAid = fills * (pol.childDirectAidAnnual || 0) * cumGeneralInflation;
+
+                // --- B. DEUTES SEPARATS I HABITATGE ---
+                const loanPersonalStep = calcLoanStep(prestecCap, prestecInt, prestecAnys);
+                prestecCap = loanPersonalStep.nextPrincipal;
+                if (prestecAnys > 0) prestecAnys -= 1;
+
+                let rateAltreHip = altreHipInt;
+                if (altreHipTipus === 'variable') rateAltreHip = macro.euribor + altreHipInt;
+                const loanAltreHabStep = calcLoanStep(altreHipCap, rateAltreHip, altreHipAnys);
+                altreHipCap = loanAltreHabStep.nextPrincipal;
+                if (altreHipAnys > 0) altreHipAnys -= 1;
+
+                let purchaseTaxAnnual = 0;
+                if (volComprar && macro.year === compraAny && !hasPurchasedYet) {
+                    hasPurchasedYet = true;
+                    const priceAtPurchase = compraPreuBase * Math.pow(1 + macro.ipc + 0.015, idx + 1);
+                    if (compraTipus === 'segona_ma') {
+                        const effectiveItp = (ageThisYear <= 35) ? pol.itpYouthRate : pol.itpRate;
+                        purchaseTaxAnnual = priceAtPurchase * effectiveItp;
+                    } else {
+                        purchaseTaxAnnual = priceAtPurchase * (pol.ivaNewHomeRate + pol.ajdRate);
+                    }
+                    hipHabCap = priceAtPurchase * compraFinPct;
+                    hipHabAnys = compraAnys;
+                }
+
+                let habRentPaid = 0;
+                let habLoanStep = { payment: 0, interest: 0, principalPaid: 0, nextPrincipal: 0 };
+                let habOwnerFees = 0;
+
+                if (hasPurchasedYet || habitatge === 'hipoteca') {
+                    let effectiveHipRate = hipHabInt;
+                    if (hasPurchasedYet) {
+                        effectiveHipRate = macro.euribor + 0.007;
+                    } else if (hipHabTipus === 'variable') {
+                        effectiveHipRate = macro.euribor + hipHabInt;
+                    }
+                    habLoanStep = calcLoanStep(hipHabCap, effectiveHipRate, hipHabAnys);
+                    hipHabCap = habLoanStep.nextPrincipal;
+                    if (hipHabAnys > 0) hipHabAnys -= 1;
+                    habOwnerFees = 1150 * cumGeneralInflation;
+                } else if (habitatge === 'propietat') {
+                    habOwnerFees = 1150 * cumGeneralInflation;
+                } else if (habitatge === 'lloguer') {
+                    if (idx > 0) {
+                        const rGrowth = (macro.ipc + 0.012) * pol.rentCapFactor;
+                        currentRentHabitual *= (1 + rGrowth);
+                    }
+                    const youthAid = (ageThisYear <= 35 && currentSalaryGross <= 26500) ? 2400 : 0;
+                    habRentPaid = Math.max(0, currentRentHabitual - youthAid);
+                }
+
+                const altreHabOwnerFees = teAltreHab ? (950 * cumGeneralInflation) : 0;
+
+                // --- C. IMPOSTOS I COTITZACIONS PER RÈGIM LABORAL I DEDUCCIÓ PER FILLS ---
+                let irpfWorkRate = 0.11;
+                if (currentSalaryGross > 18000) irpfWorkRate = 0.16;
+                if (currentSalaryGross > 30000) irpfWorkRate = 0.21;
+                if (currentSalaryGross > 45000) irpfWorkRate = 0.26;
+                if (currentSalaryGross > 70000) irpfWorkRate = 0.32;
+                if (currentSalaryGross > 110000) irpfWorkRate = 0.375;
+
+                if (currentSalaryGross <= 28000) irpfWorkRate += pol.irpfLowDelta;
+                else if (currentSalaryGross <= 65000) irpfWorkRate += pol.irpfMidDelta;
+                else irpfWorkRate += pol.irpfHighDelta;
+
+                let ssAnnual = 0;
+                if (isRetired) {
+                    irpfWorkRate = Math.max(0.03, irpfWorkRate - 0.055);
+                } else if (feina === 'autonom') {
+                    const baseReta = Math.min(7200, Math.max(2850, currentSalaryGross * 0.125));
+                    ssAnnual = baseReta * pol.autonomQuotaFactor;
+                    irpfWorkRate -= 0.045;
+                } else {
+                    const baseMaxSS = 58500 * cumGeneralInflation;
+                    const regularSS = Math.min(currentSalaryGross, baseMaxSS) * 0.0648;
+                    const excessSalary = Math.max(0, currentSalaryGross - baseMaxSS);
+                    const solidaritySS = excessSalary * 0.015 * pol.solidarityQuotaFactor;
+                    ssAnnual = regularSS + solidaritySS;
+                    irpfWorkRate -= 0.055;
+                }
+
+                const childTaxCredit = fills * (pol.childIrpfTaxCredit || 0) * cumGeneralInflation;
+                const irpfWorkAnnual = Math.max(0, (currentSalaryGross * Math.max(0.02, irpfWorkRate)) - childTaxCredit);
+                const totalWorkTaxAndSS = irpfWorkAnnual + ssAnnual;
+
+                // IRPF Estalvi i Rendes Immobiliàries
+                let baseSavingsTaxRate = 0.19;
+                if (passiveInvGross > 6000) baseSavingsTaxRate = 0.21;
+                if (passiveInvGross > 50000) baseSavingsTaxRate = 0.23;
+                const effectiveSavingsTaxRate = Math.max(0.12, baseSavingsTaxRate + pol.savingsTaxDelta);
+                const taxOnInvestments = passiveInvGross * effectiveSavingsTaxRate;
+
+                let taxOnRealEstate = 0;
+                if (teAltreHab) {
+                    if (altreUs === 'llogat') {
+                        const deductibleExpenses = loanAltreHabStep.interest + altreHabOwnerFees + 1200;
+                        const netRentalYield = Math.max(0, passiveRentGross - deductibleExpenses);
+                        const taxableRentalYield = netRentalYield * (1 - pol.rentalNetReduction);
+                        taxOnRealEstate = taxableRentalYield * Math.max(0.15, irpfWorkRate);
+                    } else {
+                        taxOnRealEstate = (95000 * 0.011) * Math.max(0.15, irpfWorkRate);
+                    }
+                }
+                const totalCapitalAndRealEstateTax = taxOnInvestments + taxOnRealEstate;
+
+                const totalGrossIncome = currentSalaryGross + passiveInvGross + passiveRentGross + childDirectAid;
+                const totalNetIncome = totalGrossIncome - totalWorkTaxAndSS - totalCapitalAndRealEstateTax;
+
+                // --- D. COSTOS DE VIDA, MOBILITAT (ETS2) I CONCILIACIÓ ---
+                currentFood *= (1 + macro.foodInf);
+                const foodCostAnnual = currentFood * pol.foodTaxFactor;
+
+                currentEnergy *= (1 + macro.energyInf);
+                currentMobility *= (1 + macro.energyInf);
+                let mobilityCostAnnual = currentMobility;
+                if (mobilitat === 'public') {
+                    mobilityCostAnnual = currentMobility * (pol.publicTransportFactor || 0.65);
+                } else if (mobilitat === 'combustio') {
+                    mobilityCostAnnual = currentMobility * (pol.fuelTaxFactor || 1.0);
+                } else {
+                    mobilityCostAnnual = currentMobility * pol.energyTaxFactor;
+                }
+                const energyAndMobilityCostAnnual = (currentEnergy * pol.energyTaxFactor) + mobilityCostAnnual;
+
+                if (idx > 0) currentGeneralLife *= (1 + macro.ipc);
+                let ageServiceFactor = 1.0;
+                if (ageThisYear >= 32 && ageThisYear <= 52) ageServiceFactor = 1.3;
+                else if (ageThisYear > 60) ageServiceFactor = 1.25;
+                const familyServiceExtra = fills * (pol.privateHealthEduAnnual * 0.45) * cumGeneralInflation;
+                const privateServicesExtra = (pol.privateHealthEduAnnual * cumGeneralInflation * ageServiceFactor) + familyServiceExtra;
+                const generalAndServicesCostAnnual = currentGeneralLife + privateServicesExtra;
+
+                const totalHabitualHousingCost = habRentPaid + habLoanStep.payment + habOwnerFees;
+                const totalAltreHabCost = loanAltreHabStep.payment + altreHabOwnerFees;
+                const totalPersonalLoanCost = loanPersonalStep.payment;
+
+                const totalExpensesAndDebt = totalHabitualHousingCost + purchaseTaxAnnual + totalAltreHabCost + totalPersonalLoanCost + foodCostAnnual + energyAndMobilityCostAnnual + generalAndServicesCostAnnual;
+
+                const netCashFlow = totalNetIncome - totalExpensesAndDebt;
+                const totalPrincipalAmortized = habLoanStep.principalPaid + loanAltreHabStep.principalPaid + loanPersonalStep.principalPaid;
+                const netWealthGenerated = netCashFlow + totalPrincipalAmortized;
+
+                const totalDebtPayments = habLoanStep.payment + loanAltreHabStep.payment + loanPersonalStep.payment;
+                const debtRatioPct = totalNetIncome > 0 ? (totalDebtPayments / totalNetIncome) * 100 : 0;
+
+                const relInflationSince2027 = idx === 0 ? 1.0 : (cumGeneralInflation / (1 + MACRO_FIXED[0].ipc));
+                const realNetIncome = totalNetIncome / relInflationSince2027;
+
+                // Valor hora net treballada (46 setmanes laborals/any * jornada setmanal del pacte)
+                const annualWorkHours = isRetired ? 0 : (46 * (pol.weeklyHours || 40));
+                const netHourlyWage = annualWorkHours > 0 ? (totalNetIncome / annualWorkHours) : 0;
+
+                yearlyResults.push({
+                    year: macro.year,
+                    euriborPct: (macro.euribor * 100).toFixed(2),
+                    salaryGross: currentSalaryGross,
+                    passiveInvGross: passiveInvGross,
+                    passiveRentGross: passiveRentGross,
+                    childDirectAid: childDirectAid,
+                    workTaxAndSS: totalWorkTaxAndSS,
+                    capitalTax: totalCapitalAndRealEstateTax,
+                    netIncome: totalNetIncome,
+                    realNetIncome: realNetIncome,
+                    netHourlyWage: netHourlyWage,
+
+                    habHousingCost: totalHabitualHousingCost,
+                    habInterest: habLoanStep.interest,
+                    habPrincipalPaid: habLoanStep.principalPaid,
+                    habRentPaid: habRentPaid,
+
+                    purchaseTax: purchaseTaxAnnual,
+
+                    altreHabCost: totalAltreHabCost,
+                    altreHabInterest: loanAltreHabStep.interest,
+                    altreHabPrincipalPaid: loanAltreHabStep.principalPaid,
+
+                    personalLoanCost: totalPersonalLoanCost,
+                    personalLoanInterest: loanPersonalStep.interest,
+                    personalLoanPrincipalPaid: loanPersonalStep.principalPaid,
+
+                    foodCost: foodCostAnnual,
+                    energyCost: energyAndMobilityCostAnnual,
+                    generalLifeCost: generalAndServicesCostAnnual,
+
+                    totalExpenses: totalExpensesAndDebt,
+                    netCashFlow: netCashFlow,
+                    totalPrincipalAmortized: totalPrincipalAmortized,
+                    netWealthGenerated: netWealthGenerated,
+                    debtRatioPct: debtRatioPct
+                });
+            });
+
+            return yearlyResults;
+        }
+
+        // Actualitzar etiquetes en directe en moure l'edat o el salari
+        function syncSalaryFromRange() {
+            const val = parseFloat(document.getElementById('in-salari').value) || 12000;
+            document.getElementById('in-salari-num').value = val;
+            markCustomArchetype();
+            runSimulation();
+        }
+
+        function syncSalaryFromNumber() {
+            const numInput = document.getElementById('in-salari-num');
+            let val = parseFloat(numInput.value);
+            if (isNaN(val) || val < 0) return;
+            const rangeInput = document.getElementById('in-salari');
+            rangeInput.value = Math.min(160000, Math.max(12000, val));
+            markCustomArchetype();
+            runSimulation();
+        }
+
+        // MOTOR PRINCIPAL DE SIMULACIÓ 2027-2030 (VISTA INDIVIDUAL)
+        function runSimulation() {
+            const salariRaw = parseFloat(document.getElementById('in-salari-num').value);
+            const salariValid = (!isNaN(salariRaw) && salariRaw >= 0) ? salariRaw : parseFloat(document.getElementById('in-salari').value);
+
+            const profile = {
+                edat: parseInt(document.getElementById('in-edat').value),
+                salari: salariValid,
+                feina: document.getElementById('in-feina').value,
+                habitatge: document.getElementById('in-habitatge').value,
+                fills: parseInt(document.getElementById('in-fills').value) || 0,
+                mobilitat: document.getElementById('in-mobilitat').value,
+                lloguerMes: parseFloat(document.getElementById('in-lloguer-mes').value),
+                hipHabTipus: document.getElementById('in-hip-hab-tipus').value,
+                hipHabCap: parseFloat(document.getElementById('in-hip-hab-cap').value),
+                hipHabInt: parseFloat(document.getElementById('in-hip-hab-int').value),
+                hipHabAnys: parseInt(document.getElementById('in-hip-hab-anys').value),
+                prestecCap: parseFloat(document.getElementById('in-prestec-cap').value),
+                prestecInt: parseFloat(document.getElementById('in-prestec-int').value),
+                prestecAnys: parseInt(document.getElementById('in-prestec-anys').value),
+                volComprar: document.getElementById('chk-compra').checked,
+                compraPreu: parseFloat(document.getElementById('in-compra-preu').value),
+                compraAny: parseInt(document.getElementById('in-compra-any').value),
+                compraTipus: document.getElementById('in-compra-tipus').value,
+                compraFin: parseFloat(document.getElementById('in-compra-fin').value),
+                compraAnys: parseInt(document.getElementById('in-compra-anys').value),
+                invCap: parseFloat(document.getElementById('in-inv-cap').value),
+                invRend: parseFloat(document.getElementById('in-inv-rend').value),
+                teAltreHab: document.getElementById('chk-altre-hab').checked,
+                altreUs: document.getElementById('in-altre-us').value,
+                altreRenda: parseFloat(document.getElementById('in-altre-renda').value),
+                altreHipTipus: document.getElementById('in-altre-hip-tipus').value,
+                altreHipCap: parseFloat(document.getElementById('in-altre-hip-cap').value),
+                altreHipInt: parseFloat(document.getElementById('in-altre-hip-int').value),
+                altreHipAnys: parseInt(document.getElementById('in-altre-hip-anys').value)
+            };
+
+            // Actualitzar descripció del règim laboral i etiquetes UI
+            document.getElementById('lbl-regim-detall').textContent = REGIME_DESCRIPTIONS[profile.feina] || '';
+            document.getElementById('lbl-edat').textContent = profile.edat;
+            document.getElementById('lbl-edat-30').textContent = profile.edat + 4;
+            document.getElementById('lbl-salari').textContent = formatEURSimple(profile.salari) + '/any';
+            document.getElementById('lbl-salari-mes').textContent = formatEURSimple(profile.salari / 12) + '/mes brut';
+            document.getElementById('lbl-lloguer-mes').textContent = formatEURSimple(profile.lloguerMes) + '/mes';
+            document.getElementById('lbl-hip-hab-cap').textContent = formatEURSimple(profile.hipHabCap);
+            document.getElementById('lbl-hip-hab-int').textContent = profile.hipHabInt.toFixed(2).replace('.', ',') + '%';
+            document.getElementById('lbl-hip-hab-anys').textContent = profile.hipHabAnys + (profile.hipHabAnys === 1 ? ' any' : ' anys');
+            document.getElementById('lbl-prestec-cap').textContent = formatEURSimple(profile.prestecCap);
+            document.getElementById('lbl-prestec-int').textContent = profile.prestecInt.toFixed(2).replace('.', ',') + '%';
+            document.getElementById('lbl-prestec-anys').textContent = profile.prestecAnys + (profile.prestecAnys === 1 ? ' any' : ' anys');
+            document.getElementById('lbl-compra-preu').textContent = formatEURSimple(profile.compraPreu);
+            document.getElementById('lbl-compra-fin').textContent = Math.round(profile.compraFin) + '%';
+            document.getElementById('lbl-compra-anys').textContent = profile.compraAnys + ' anys';
+            document.getElementById('lbl-inv-cap').textContent = formatEURSimple(profile.invCap);
+            document.getElementById('lbl-inv-rend').textContent = profile.invRend.toFixed(1).replace('.', ',') + '%';
+            document.getElementById('lbl-altre-renda').textContent = formatEURSimple(profile.altreRenda) + '/mes';
+            document.getElementById('lbl-altre-hip-cap').textContent = formatEURSimple(profile.altreHipCap);
+            document.getElementById('lbl-altre-hip-int').textContent = profile.altreHipInt.toFixed(2).replace('.', ',') + '%';
+            document.getElementById('lbl-altre-hip-anys').textContent = profile.altreHipAnys + (profile.altreHipAnys === 1 ? ' any' : ' anys');
+
+            // Llegir escenari polític
+            const partitKey = document.getElementById('in-partit').value;
+            const pacteSelect = document.getElementById('in-pacte');
+            const coalitionsA = POLITICAL_SCENARIOS[partitKey].coalitions;
+            const pacteKey = (pacteSelect.value && coalitionsA[pacteSelect.value]) ? pacteSelect.value : Object.keys(coalitionsA)[0];
+            const coalition = coalitionsA[pacteKey];
+            const pol = coalition.params;
+
+            // Sincronitzar desplegables de la segona vista
+            const syncPacte = document.getElementById('in-pacte-sync');
+            if (syncPacte) syncPacte.value = pacteKey;
+            // Actualitzar capçalera política, jornada laboral i ITP aplicable segons edat actual
+            const appliedItpPreview = (profile.edat <= 35) ? pol.itpYouthRate : pol.itpRate;
+            document.getElementById('badge-jornada').textContent = `Jornada: ${String(pol.weeklyHours || 40).replace('.', ',')}h/set`;
+            document.getElementById('badge-itp').textContent = `ITP: ${(appliedItpPreview * 100).toFixed(1).replace('.', ',')}%${profile.edat <= 35 ? ' (Jove)' : ''}`;
+            document.getElementById('badge-orientacio').textContent = coalition.orientation;
+            document.getElementById('llista-mesures').innerHTML = coalition.measures.map(m => `<li>${m}</li>`).join('');
+
+            const yearlyResults = simulateProfileTrajectory(profile, pol);
+
+            // Actualitzar KPIs del 2030
+            const r30 = yearlyResults[3];
+            const kpiCash = document.getElementById('kpi-cashflow-30');
+            kpiCash.textContent = formatValue(r30.netCashFlow, r30.netIncome, true) + (displayMode === 'mensual' ? '/m' : '');
+            kpiCash.className = r30.netCashFlow >= 0
+                ? 'text-xl sm:text-2xl font-bold font-mono-num text-emerald-600'
+                : 'text-xl sm:text-2xl font-bold font-mono-num text-rose-600';
+
+            const kpiPat = document.getElementById('kpi-patrimoni-30');
+            kpiPat.textContent = formatValue(r30.netWealthGenerated, r30.netIncome, true) + (displayMode === 'mensual' ? '/m' : '');
+            kpiPat.className = r30.netWealthGenerated >= 0
+                ? 'text-xl sm:text-2xl font-bold font-mono-num text-blue-700'
+                : 'text-xl sm:text-2xl font-bold font-mono-num text-rose-600';
+
+            const kpiRatio = document.getElementById('kpi-deute-ratio');
+            const kpiRatioTag = document.getElementById('kpi-deute-tag');
+            kpiRatio.textContent = r30.debtRatioPct.toFixed(1).replace('.', ',') + '%';
+            if (r30.debtRatioPct <= 30) {
+                kpiRatioTag.textContent = 'Sostenible';
+                kpiRatioTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700';
+            } else if (r30.debtRatioPct <= 42) {
+                kpiRatioTag.textContent = 'Exigent';
+                kpiRatioTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-700';
+            } else {
+                kpiRatioTag.textContent = 'Sobreendeutat';
+                kpiRatioTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-50 text-rose-700';
+            }
+
+            document.getElementById('kpi-serveis-score').textContent = `${pol.publicServicesScore}/100`;
+            const kpiTrenVida = document.getElementById('kpi-tren-vida');
+            if (r30.netHourlyWage > 0) {
+                kpiTrenVida.textContent = `Valor hora net: ${r30.netHourlyWage.toFixed(2).replace('.', ',')} €/h (${String(pol.weeklyHours || 40).replace('.', ',')}h)`;
+            } else {
+                kpiTrenVida.textContent = 'Pensió i cobertura sanitària pública';
+            }
+            const tagServeis = document.getElementById('kpi-serveis-tag');
+            if (pol.publicServicesScore >= 80) {
+                tagServeis.textContent = 'Cobertura alta';
+                tagServeis.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700';
+            } else if (pol.publicServicesScore >= 70) {
+                tagServeis.textContent = 'Mixt';
+                tagServeis.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700';
+            } else {
+                tagServeis.textContent = 'Més privat';
+                tagServeis.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-700';
+            }
+
+            renderScaleTable(yearlyResults);
+            renderChart(yearlyResults);
+            renderHeadToHeadComparison(profile, partitKey, pacteKey, yearlyResults);
+        }
+
+        // Renderitzar la conclusió final i la taula comparativa Escenari A vs Escenari B
+        function renderHeadToHeadComparison(profile, partitAKey, pacteAKey, resultsA) {
+            const scenA = POLITICAL_SCENARIOS[partitAKey];
+            const coalA = scenA.coalitions[pacteAKey];
+
+            const partitBKey = document.getElementById('in-partit-b').value;
+            const pacteBSelect = document.getElementById('in-pacte-b');
+            const scenB = POLITICAL_SCENARIOS[partitBKey];
+            const pacteBKey = (pacteBSelect.value && scenB.coalitions[pacteBSelect.value]) ? pacteBSelect.value : Object.keys(scenB.coalitions)[0];
+            const coalB = scenB.coalitions[pacteBKey];
+
+            const resultsB = simulateProfileTrajectory(profile, coalB.params);
+
+            // Actualitzar capçaleres de les targetes A i B
+            document.getElementById('comp-a-orient').textContent = coalA.orientation;
+            document.getElementById('comp-a-title').textContent = `${scenA.name} · ${coalA.label}`;
+            document.getElementById('comp-b-orient').textContent = coalB.orientation;
+
+            document.getElementById('th-comp-a').textContent = `A: ${scenA.name}`;
+            document.getElementById('th-comp-b').textContent = `B: ${scenB.name}`;
+
+            // Càlculs 2030 i acumulats 2027-2030
+            const rA30 = resultsA[3];
+            const rB30 = resultsB[3];
+
+            const sumField = (arr, fn) => arr.reduce((acc, item) => acc + fn(item), 0);
+
+            const accNetIncomeA = sumField(resultsA, r => r.netIncome);
+            const accNetIncomeB = sumField(resultsB, r => r.netIncome);
+
+            const accTaxesA = sumField(resultsA, r => r.workTaxAndSS + r.capitalTax + r.purchaseTax);
+            const accTaxesB = sumField(resultsB, r => r.workTaxAndSS + r.capitalTax + r.purchaseTax);
+
+            const accHousingDebtA = sumField(resultsA, r => r.habHousingCost + r.altreHabCost + r.personalLoanCost);
+            const accHousingDebtB = sumField(resultsB, r => r.habHousingCost + r.altreHabCost + r.personalLoanCost);
+
+            const accLifeEnergyA = sumField(resultsA, r => r.foodCost + r.energyCost + r.generalLifeCost);
+            const accLifeEnergyB = sumField(resultsB, r => r.foodCost + r.energyCost + r.generalLifeCost);
+
+            const accCashFlowA = sumField(resultsA, r => r.netCashFlow);
+            const accCashFlowB = sumField(resultsB, r => r.netCashFlow);
+
+            const accWealthA = sumField(resultsA, r => r.netWealthGenerated);
+            const accWealthB = sumField(resultsB, r => r.netWealthGenerated);
+
+            const rows = [
+                {
+                    label: 'Ingressos Nets Totals (Any 2030)',
+                    valA: rA30.netIncome,
+                    valB: rB30.netIncome,
+                    higherIsBetter: true,
+                    bold: true
+                },
+                {
+                    label: 'Impostos Directes + SS + ITP/IVA Compra (Acumulat 27–30)',
+                    valA: accTaxesA,
+                    valB: accTaxesB,
+                    higherIsBetter: false
+                },
+                {
+                    label: 'Despesa Habitatge i Quotes Préstecs (Acumulat 27–30)',
+                    valA: accHousingDebtA,
+                    valB: accHousingDebtB,
+                    higherIsBetter: false
+                },
+                {
+                    label: 'Aliments, Energia (ETS2) i Serveis Privats (Acumulat 27–30)',
+                    valA: accLifeEnergyA,
+                    valB: accLifeEnergyB,
+                    higherIsBetter: false
+                },
+                {
+                    label: 'Estalvi Líquid Anual l\'any 2030 (Flux de Caixa)',
+                    valA: rA30.netCashFlow,
+                    valB: rB30.netCashFlow,
+                    higherIsBetter: true,
+                    bold: true
+                },
+                {
+                    label: 'Estalvi Líquid Acumulat en 4 Anys (2027–2030)',
+                    valA: accCashFlowA,
+                    valB: accCashFlowB,
+                    higherIsBetter: true,
+                    highlight: 'bg-emerald-50/40 font-bold'
+                },
+                {
+                    label: 'Patrimoni Net Generat Acumulat (Estalvi + Amortització 27–30)',
+                    valA: accWealthA,
+                    valB: accWealthB,
+                    higherIsBetter: true,
+                    highlight: 'bg-blue-50/50 font-bold'
+                },
+                {
+                    label: 'Jornada Legal i Valor Hora Net (2030)',
+                    customTextA: rA30.netHourlyWage > 0 ? `${rA30.netHourlyWage.toFixed(2).replace('.', ',')} €/h (${String(coalA.params.weeklyHours).replace('.', ',')}h)` : 'Pensió pública',
+                    customTextB: rB30.netHourlyWage > 0 ? `${rB30.netHourlyWage.toFixed(2).replace('.', ',')} €/h (${String(coalB.params.weeklyHours).replace('.', ',')}h)` : 'Pensió pública',
+                    diffCustom: rA30.netHourlyWage > 0
+                        ? `${(rA30.netHourlyWage - rB30.netHourlyWage) >= 0 ? '+' : ''}${(rA30.netHourlyWage - rB30.netHourlyWage).toFixed(2).replace('.', ',')} €/h`
+                        : '—'
+                },
+                {
+                    label: 'Índex de Cobertura de Serveis Públics (Sanitat/Educació)',
+                    customTextA: `${coalA.params.publicServicesScore}/100`,
+                    customTextB: `${coalB.params.publicServicesScore}/100`,
+                    diffCustom: `${(coalA.params.publicServicesScore - coalB.params.publicServicesScore) >= 0 ? '+' : ''}${coalA.params.publicServicesScore - coalB.params.publicServicesScore} pts`
+                }
+            ];
+
+            const tbody = document.getElementById('taula-comparativa-ab-body');
+            tbody.innerHTML = rows.map(row => {
+                const trCls = row.highlight ? row.highlight : (row.bold ? 'font-semibold bg-slate-50/60' : 'hover:bg-slate-50');
+                if (row.customTextA !== undefined) {
+                    return `
+                        <tr class="${trCls}">
+                            <td class="py-2.5 px-4 text-slate-800">${row.label}</td>
+                            <td class="py-2.5 px-4 text-right font-mono-num text-blue-950 bg-blue-50/20">${row.customTextA}</td>
+                            <td class="py-2.5 px-4 text-right font-mono-num text-amber-950 bg-amber-50/20">${row.customTextB}</td>
+                            <td class="py-2.5 px-4 text-right font-mono-num font-semibold text-slate-700">${row.diffCustom}</td>
+                        </tr>
+                    `;
+                }
+
+                const diff = row.valA - row.valB;
+                const isFavorableToA = row.higherIsBetter ? (diff > 50) : (diff < -50);
+                const isFavorableToB = row.higherIsBetter ? (diff < -50) : (diff > 50);
+
+                let diffColor = 'text-slate-600';
+                if (isFavorableToA) diffColor = 'text-emerald-700 font-bold';
+                else if (isFavorableToB) diffColor = 'text-rose-600 font-bold';
+
+                const diffFormatted = (diff >= 0 ? '+' : '-') + formatEURSimple(Math.abs(diff));
+
+                return `
+                    <tr class="${trCls}">
+                        <td class="py-2.5 px-4 text-slate-800">${row.label}</td>
+                        <td class="py-2.5 px-4 text-right font-mono-num text-blue-950 bg-blue-50/20">${formatEURSimple(row.valA)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono-num text-amber-950 bg-amber-50/20">${formatEURSimple(row.valB)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono-num ${diffColor}">${diffFormatted}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Generar redactat de Conclusió Final Personalitzada
+            const cashDiff = accCashFlowA - accCashFlowB;
+            const taxDiff = accTaxesA - accTaxesB;
+            const serviceDiff = coalA.params.publicServicesScore - coalB.params.publicServicesScore;
+
+            let winnerText = '';
+            if (Math.abs(cashDiff) < 400) {
+                winnerText = `Per al teu perfil (${profile.edat} anys, ${formatEURSimple(profile.salari)} bruts), tots dos escenaris generen una capacitat d'estalvi líquid pràcticament equivalent entre 2027 i 2030 (diferència de només ${formatEURSimple(Math.abs(cashDiff))}).`;
+            } else if (cashDiff > 0) {
+                winnerText = `En termes estrictament financers, l'<strong>Escenari A (${scenA.name} · ${coalA.orientation})</strong> et permet acumular <strong>${formatEURSimple(cashDiff)} més d'estalvi líquid</strong> entre 2027 i 2030 que l'Escenari B (${scenB.name}).`;
+            } else {
+                winnerText = `En termes estrictament financers, l'<strong>Escenari B (${scenB.name} · ${coalB.orientation})</strong> et permet acumular <strong>${formatEURSimple(Math.abs(cashDiff))} més d'estalvi líquid</strong> entre 2027 i 2030 que l'Escenari A (${scenA.name}).`;
+            }
+
+            let fiscalNote = '';
+            if (taxDiff < -300) {
+                fiscalNote = ` Aquesta diferència s'explica en gran part perquè amb <strong>${scenA.name}</strong> pagues <strong>${formatEURSimple(Math.abs(taxDiff))} menys en impostos i cotitzacions</strong> durant els 4 anys.`;
+            } else if (taxDiff > 300) {
+                fiscalNote = ` Tot i que amb <strong>${scenA.name}</strong> suportes <strong>${formatEURSimple(taxDiff)} més de càrrega fiscal/cotitzacions</strong>, la política de rendes, habitatge o prestacions compensa part de l'esforç.`;
+            }
+
+            let welfareNote = '';
+            if (serviceDiff >= 10) {
+                welfareNote = ` A més, l'Escenari A manté una cobertura de serveis públics sensiblement superior (<strong>+${serviceDiff} punts</strong> en sanitat, educació i cures), reduint el risc de despeses privades imprevistes.`;
+            } else if (serviceDiff <= -10) {
+                welfareNote = ` Cal tenir en compte que l'Escenari B ofereix un blindatge públic superior (<strong>+${Math.abs(serviceDiff)} punts</strong>), mentre que l'Escenari A exigeix més cobertura privada.`;
+            }
+
+            document.getElementById('text-conclusio-final').innerHTML = winnerText + fiscalNote + welfareNote;
+
+            // Etiquetes resum de la conclusió
+            const tagsContainer = document.getElementById('tags-conclusio-final');
+            const tags = [
+                `Estalvi 4 anys A: ${formatEURSimple(accCashFlowA)}`,
+                `Estalvi 4 anys B: ${formatEURSimple(accCashFlowB)}`,
+                `Ràtio deute 2030: ${rA30.debtRatioPct.toFixed(1).replace('.', ',')}%`,
+                `Euríbor 2030 (fix): 2,50%`
+            ];
+            tagsContainer.innerHTML = tags.map(t =>
+                `<span class="text-[11px] font-mono-num px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700">${t}</span>`
+            ).join('');
+        }
+
+        // Renderitzar la taula comptable anual 2027-2030
+        function renderScaleTable(results) {
+            const tbody = document.getElementById('taula-escala-body');
+
+            const rows = [
+                { section: 'A. INGRESSOS BRUTS, PASSIUS I PRESTACIONS FAMILIARS' },
+                { label: 'Salari / Pensió / Rendiment activitat brut', key: 'salaryGross', style: 'font-medium text-slate-800' },
+                { label: 'Rendiments bruts inversions financeres', key: 'passiveInvGross', style: 'text-emerald-700' },
+                { label: 'Ingressos bruts lloguer altres habitatges', key: 'passiveRentGross', style: 'text-emerald-700' },
+                { label: 'Prestació directa universal per fills a càrrec', key: 'childDirectAid', style: 'text-emerald-700 font-medium' },
+
+                { section: 'B. IMPOSTOS DIRECTES I COTITZACIONS' },
+                { label: 'IRPF Treball/Activitat (amb deducció fills) + SS / RETA', key: 'workTaxAndSS', negative: true, style: 'text-rose-600' },
+                { label: 'IRPF Estalvi i Rendiments Immobiliaris', key: 'capitalTax', negative: true, style: 'text-rose-600' },
+                { label: 'INGRESSOS NETS DISPONIBLES TOTALS', key: 'netIncome', highlight: 'bg-slate-50 font-bold text-slate-900 border-t border-slate-200' },
+
+                { section: 'C. HABITATGE, IMPOSTOS DE COMPRA I DEUTES SEPARATS' },
+                { label: 'Habitatge habitual (Lloguer o Quota hipoteca + IBI)', key: 'habHousingCost', negative: true, style: 'text-slate-700', subKey: 'habInterest', subLabel: 'Interessos hipoteca habitual' },
+                { label: 'Impost adquisició habitatge (ITP / IVA+AJD)', key: 'purchaseTax', negative: true, style: 'text-indigo-700 font-medium' },
+                { label: 'Altres habitatges (Quota hipoteca + despeses)', key: 'altreHabCost', negative: true, style: 'text-slate-700', subKey: 'altreHabInterest', subLabel: 'Interessos hipoteca 2n immoble' },
+                { label: 'Altres préstecs (Quota consum / cotxe)', key: 'personalLoanCost', negative: true, style: 'text-slate-700', subKey: 'personalLoanInterest', subLabel: 'Interessos préstecs personals' },
+
+                { section: 'D. CISTELLA DE LA COMPRA, ENERGIA/MOBILITAT I SERVEIS' },
+                { label: 'Aliments i begudes (inflació alimentària UE)', key: 'foodCost', negative: true, style: 'text-slate-700' },
+                { label: 'Energia llar i mobilitat habitual (efecte ETS2 / transport)', key: 'energyCost', negative: true, style: 'text-amber-700' },
+                { label: 'Despesa general, conciliació i salut privada (dentista/òptica)', key: 'generalLifeCost', negative: true, style: 'text-slate-700' },
+
+                { section: 'E. BALANÇ LÍQUID I PATRIMONI NET GENERAT' },
+                { label: 'FLUX DE CAIXA NET (Estalvi líquid anual)', key: 'netCashFlow', cashflowRow: true },
+                { label: 'Capital amortitzat de tots els préstecs (Reducció deute)', key: 'totalPrincipalAmortized', style: 'text-blue-700 font-medium' },
+                { label: 'INCREMENT PATRIMONIAL NET (Estalvi + Amortització)', key: 'netWealthGenerated', highlight: 'bg-blue-50/70 font-bold text-blue-950 border-t border-blue-200' }
+            ];
+
+            tbody.innerHTML = rows.map(row => {
+                if (row.section) {
+                    return `
+                        <tr class="bg-slate-100/80">
+                            <td colspan="5" class="py-2 px-4 text-[11px] font-bold tracking-wider text-slate-600 uppercase">${row.section}</td>
+                        </tr>
+                    `;
+                }
+
+                const trClass = row.highlight ? row.highlight : (row.cashflowRow ? 'bg-emerald-50/40 font-bold border-t border-slate-200' : 'hover:bg-slate-50/80');
+
+                const cells = results.map((r, i) => {
+                    const val = r[row.key] || 0;
+                    const formatted = row.negative && val > 0
+                        ? '-' + formatValue(val, r.netIncome, false)
+                        : formatValue(val, r.netIncome, row.cashflowRow || row.key === 'netWealthGenerated');
+
+                    let cellColor = row.style || '';
+                    if (row.cashflowRow) {
+                        cellColor = val >= 0 ? 'text-emerald-700' : 'text-rose-600';
+                    }
+                    const col2030Bg = i === 3 ? 'bg-blue-50/30' : '';
+
+                    let subHtml = '';
+                    if (row.subKey && r[row.subKey] > 0) {
+                        subHtml = `<div class="text-[10px] font-normal text-slate-400">(${row.subLabel}: ${formatValue(r[row.subKey], r.netIncome)})</div>`;
+                    }
+
+                    return `<td class="py-2.5 px-4 text-right font-mono-num ${cellColor} ${col2030Bg}">${formatted}${subHtml}</td>`;
+                }).join('');
+
+                return `
+                    <tr class="${trClass}">
+                        <td class="py-2.5 px-4 text-slate-800">${row.label}</td>
+                        ${cells}
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Renderitzar gràfic d'evolució 2027-2030 (Chart.js)
+        function renderChart(results) {
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            const labels = results.map(r => `${r.year} (Euríbor ${r.euriborPct}%)`);
+
+            const getVal = (val, net) => {
+                if (displayMode === 'pct') return net > 0 ? Number(((val / net) * 100).toFixed(1)) : 0;
+                const div = displayMode === 'mensual' ? 12 : 1;
+                return Math.round(val / div);
+            };
+
+            const netIncomeData = results.map(r => getVal(r.netIncome, r.netIncome));
+            const housingAndTaxData = results.map(r => getVal(r.habHousingCost + r.purchaseTax + r.altreHabCost, r.netIncome));
+            const personalDebtData = results.map(r => getVal(r.personalLoanCost, r.netIncome));
+            const foodEnergyData = results.map(r => getVal(r.foodCost + r.energyCost, r.netIncome));
+            const generalLifeData = results.map(r => getVal(r.generalLifeCost, r.netIncome));
+
+            if (chartInstance) {
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = netIncomeData;
+                chartInstance.data.datasets[1].data = housingAndTaxData;
+                chartInstance.data.datasets[2].data = personalDebtData;
+                chartInstance.data.datasets[3].data = foodEnergyData;
+                chartInstance.data.datasets[4].data = generalLifeData;
+                chartInstance.update();
+                return;
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Ingressos Nets Totals',
+                            data: netIncomeData,
+                            borderColor: '#0f172a',
+                            backgroundColor: '#0f172a',
+                            borderWidth: 2.5,
+                            pointRadius: 4,
+                            tension: 0.2,
+                            order: 0
+                        },
+                        {
+                            label: 'Habitatge + Impost Compra + 2n Immoble',
+                            data: housingAndTaxData,
+                            backgroundColor: '#3b82f6',
+                            stack: 'expenses',
+                            borderRadius: 3
+                        },
+                        {
+                            label: 'Altres Préstecs (Consum/Cotxe)',
+                            data: personalDebtData,
+                            backgroundColor: '#8b5cf6',
+                            stack: 'expenses',
+                            borderRadius: 3
+                        },
+                        {
+                            label: 'Aliments + Energia (ETS2)',
+                            data: foodEnergyData,
+                            backgroundColor: '#f59e0b',
+                            stack: 'expenses',
+                            borderRadius: 3
+                        },
+                        {
+                            label: 'Despesa General i Salut/Educació',
+                            data: generalLifeData,
+                            backgroundColor: '#94a3b8',
+                            stack: 'expenses',
+                            borderRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 11 } }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                font: { family: 'JetBrains Mono', size: 11 },
+                                callback: (val) => displayMode === 'pct' ? val + '%' : val.toLocaleString('ca-ES') + ' €'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const suffix = displayMode === 'pct' ? '%' : ' €';
+                                    return `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('ca-ES')}${suffix}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generar diagnòstic normatiu per a cada perfil laboral sota el pacte polític actiu
+        function getProfileDiagnostic(arch, r27, r30, pol) {
+            const realPowerChangePct = ((r30.realNetIncome - r27.realNetIncome) / r27.realNetIncome) * 100;
+            let status = 'Neutre';
+            let statusBadge = 'bg-slate-100 text-slate-700 border-slate-200';
+            let reason = '';
+
+            if (arch.id === 'jove_serveis') {
+                if (pol.smiGrowthBonus >= 0.015 && pol.rentCapFactor <= 0.92) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Impulsat per pujada SMI/trams baixos IRPF i contenció del lloguer.';
+                } else if (r30.netCashFlow < 0) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Tensionat per desregulació del lloguer i inflació de cistella bàsica.';
+                } else {
+                    reason = 'Beneficiat per rebaixa fiscal d\'IRPF, però exposat a lloguer lliure.';
+                }
+            } else if (arch.id === 'industria_mitjana') {
+                if (realPowerChangePct >= 1.8 && r30.netCashFlow > 3000) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Alleujament d\'hipoteca variable (baixada Euríbor) i millora fiscal.';
+                } else if (realPowerChangePct < 0.5) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Erosió per energia ETS2 i escàs marge de revalorització neta.';
+                } else {
+                    reason = 'Estabilitat per descens d\'interessos hipotecaris i contenció energia.';
+                }
+            } else if (arch.id === 'docent_public' || arch.id === 'metge_sanitari') {
+                if (pol.healthEduBonus >= 0.008) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Beneficiat per revalorització de funció pública/sanitària i serveis forts.';
+                } else if (pol.healthEduBonus < 0) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Pèrdua de poder adquisitiu per contenció/congelació salarial pública.';
+                } else {
+                    reason = 'Equilibri entre rebaixa d\'IRPF i pujada salarial pública moderada.';
+                }
+            } else if (arch.id === 'enginyer_tic') {
+                if (pol.itpYouthRate <= 0.035 && pol.irpfMidDelta < 0) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Màxim estalvi en compra 2028 gràcies a ITP reduït i rebaixa d\'IRPF.';
+                } else if (pol.irpfMidDelta > 0.005) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Major pressió fiscal en trams mitjans-alts i tributació de l\'estalvi.';
+                } else {
+                    reason = 'Bonificació ITP jove (<35) facilita l\'adquisició de primer habitatge el 2028.';
+                }
+            } else if (arch.id === 'autonom_reta') {
+                if (pol.autonomQuotaFactor <= 0.90) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Estalvi directe per rebaixa de trams RETA i deduccions fiscals.';
+                } else if (pol.autonomQuotaFactor >= 1.02) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Afectat per l\'increment de quotes RETA (31,6%) i costos energètics.';
+                } else {
+                    reason = 'Manteniment del sistema RETA per ingressos reals i estalvi en energia.';
+                }
+            } else if (arch.id === 'empresari_pime') {
+                if (pol.irpfHighDelta < 0 && pol.savingsTaxDelta < 0) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Beneficiat per rebaixa IRPF trams alts, estalvi i fi quota solidaritat.';
+                } else if (pol.irpfHighDelta >= 0.03 || pol.rentalNetReduction <= 0.45) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Penalitzat per recàrrec en rendes altes, estalvi i reducció menor en lloguers.';
+                } else {
+                    reason = 'Seguretat jurídica immobiliària i incentius fiscals (65–70%) al lloguer.';
+                }
+            } else if (arch.id === 'jubilat_mitja') {
+                if (pol.pensionIndexFactor >= 1.0 && pol.privateHealthEduAnnual <= 250) {
+                    status = 'Guanyador';
+                    statusBadge = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    reason = 'Blindatge de pensió amb IPC real i baixa despesa privada en sanitat.';
+                } else if (pol.pensionIndexFactor < 0.95) {
+                    status = 'Penalitzat';
+                    statusBadge = 'bg-rose-50 text-rose-800 border-rose-200';
+                    reason = 'Pèrdua de poder adquisitiu per desindexació parcial de pensions i copagaments.';
+                } else {
+                    reason = 'Pensió actualitzada amb IPC, però amb més despesa sanitària privada.';
+                }
+            }
+
+            return { status, statusBadge, reason, realPowerChangePct };
+        }
+
+        // RENDERITZAR VISTA 2: IMPACTE COMPARATIU PER PERFILS LABORALS (2027-2030)
+        function renderProfilesComparisonView() {
+            const partitKey = document.getElementById('in-partit').value;
+            const pacteKey = document.getElementById('in-pacte').value;
+            const coalition = POLITICAL_SCENARIOS[partitKey].coalitions[pacteKey];
+            const pol = coalition.params;
+
+            const evaluations = LABOR_ARCHETYPES.map(arch => {
+                const res = simulateProfileTrajectory(arch, pol);
+                const r27 = res[0];
+                const r30 = res[3];
+                const diag = getProfileDiagnostic(arch, r27, r30, pol);
+                return { arch, r27, r30, diag };
+            });
+
+            // Calcular KPIs de guanyador, penalitzat i bretxa
+            const sortedByPower = [...evaluations].sort((a, b) => b.diag.realPowerChangePct - a.diag.realPowerChangePct);
+            const best = sortedByPower[0];
+            const worst = sortedByPower[sortedByPower.length - 1];
+
+            document.getElementById('prof-kpi-winner').textContent = `${best.arch.fullName} (${best.diag.realPowerChangePct >= 0 ? '+' : ''}${best.diag.realPowerChangePct.toFixed(1).replace('.', ',')}%)`;
+            document.getElementById('prof-kpi-winner-desc').textContent = best.diag.reason;
+
+            document.getElementById('prof-kpi-loser').textContent = `${worst.arch.fullName} (${worst.diag.realPowerChangePct >= 0 ? '+' : ''}${worst.diag.realPowerChangePct.toFixed(1).replace('.', ',')}%)`;
+            document.getElementById('prof-kpi-loser-desc').textContent = worst.diag.reason;
+
+            const directiu = evaluations.find(e => e.arch.id === 'empresari_pime').r30.netCashFlow;
+            const jove = evaluations.find(e => e.arch.id === 'jove_serveis').r30.netCashFlow;
+            document.getElementById('prof-kpi-gap').textContent = formatEURSimple(directiu - jove) + '/any';
+
+            // Renderitzar files de la taula matriu
+            const tbody = document.getElementById('taula-perfils-body');
+            tbody.innerHTML = evaluations.map(({ arch, r27, r30, diag }) => {
+                const totalTaxes30 = r30.workTaxAndSS + r30.capitalTax;
+                const powerSign = diag.realPowerChangePct >= 0 ? '+' : '';
+                const powerColor = diag.realPowerChangePct >= 1.0 ? 'text-emerald-700' : (diag.realPowerChangePct < 0 ? 'text-rose-600' : 'text-slate-700');
+                const cashColor = r30.netCashFlow >= 0 ? 'text-emerald-700' : 'text-rose-600';
+
+                return `
+                    <tr onclick="selectProfileAndOpenIndividual('${arch.id}')" class="hover:bg-blue-50/50 cursor-pointer transition-colors group">
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900 group-hover:text-blue-700 transition-colors">${arch.fullName}</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">${arch.edat} anys (→ ${arch.edat + 4} el 2030)</div>
+                        </td>
+                        <td class="py-3 px-3 text-right font-mono-num">
+                            <div class="text-slate-500 text-[11px]">${formatValue(r27.salaryGross, r27.netIncome)}</div>
+                            <div class="font-bold text-slate-900">→ ${formatValue(r30.salaryGross, r30.netIncome)}</div>
+                        </td>
+                        <td class="py-3 px-3 text-right font-mono-num text-rose-600">
+                            -${formatValue(totalTaxes30, r30.netIncome)}
+                        </td>
+                        <td class="py-3 px-3 text-right font-mono-num text-slate-700">
+                            -${formatValue(r30.totalExpenses, r30.netIncome)}
+                        </td>
+                        <td class="py-3 px-3 text-right font-mono-num font-bold bg-blue-50/30 ${cashColor}">
+                            ${formatValue(r30.netCashFlow, r30.netIncome, true)}
+                        </td>
+                        <td class="py-3 px-3 text-right font-mono-num font-bold ${powerColor}">
+                            ${powerSign}${diag.realPowerChangePct.toFixed(1).replace('.', ',')}%
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded border mb-1 ${diag.statusBadge}">${diag.status}</span>
+                            <p class="text-[11px] text-slate-600 leading-snug">${diag.reason}</p>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderProfilesChart(evaluations);
+        }
+
+        // Gràfic comparatiu dels 8 Perfils Laborals (Chart.js)
+        function renderProfilesChart(evaluations) {
+            const ctx = document.getElementById('profilesComparisonChart').getContext('2d');
+            const labels = evaluations.map(e => e.arch.shortName);
+
+            const getVal = (val, net) => {
+                if (displayMode === 'pct') return net > 0 ? Number(((val / net) * 100).toFixed(1)) : 0;
+                const div = displayMode === 'mensual' ? 12 : 1;
+                return Math.round(val / div);
+            };
+
+            const cashFlowData = evaluations.map(e => getVal(e.r30.netCashFlow, e.r30.netIncome));
+            const wealthData = evaluations.map(e => getVal(e.r30.netWealthGenerated, e.r30.netIncome));
+
+            if (profilesChartInstance) {
+                profilesChartInstance.data.labels = labels;
+                profilesChartInstance.data.datasets[0].data = cashFlowData;
+                profilesChartInstance.data.datasets[1].data = wealthData;
+                profilesChartInstance.update();
+                return;
+            }
+
+            profilesChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Estalvi Líquid Anual (2030)',
+                            data: cashFlowData,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Patrimoni Net Generat (Estalvi + Amortització Deute 2030)',
+                            data: wealthData,
+                            backgroundColor: '#2563eb',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 11 } }
+                        },
+                        y: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                font: { family: 'JetBrains Mono', size: 11 },
+                                callback: (val) => displayMode === 'pct' ? val + '%' : val.toLocaleString('ca-ES') + ' €'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { family: 'Inter', size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const suffix = displayMode === 'pct' ? '%' : ' €';
+                                    return `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('ca-ES')}${suffix}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicialització en carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            renderArchetypeButtons();
+            updateCoalitionOptions(true);
+            updateCoalitionOptionsB(true);
+            handleHousingUI();
+        });
+    </script>
+</body>
+</html>
